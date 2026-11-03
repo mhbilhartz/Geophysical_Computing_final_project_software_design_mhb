@@ -1,0 +1,14 @@
+{
+  "numpy": "2.3.5",
+  "scipy": "1.17.0",
+  "matplotlib": "3.10.8",
+  "solver_sha256": "97acd2877cea4b70ed3754cac387c2cba3f7e8fc14adf0a5e2e2c18798142556",
+  "rows": 53,
+  "unique_tunnel_solves": 45,
+  "homogeneous_solves": 7,
+  "surface_definition": "First-row potential, zero-normal-gradient top-face reconstruction",
+  "span_definition": "Outer span where abs(surface delta) >= 0.5*peak, including the central zero gap",
+  "domain_normalization": "A/E0, E0=(V_left-V_right)/W; units m; not apparent resistivity",
+  "peak_tie_rule": "Leftmost absolute maximum tied within relative 1e-10; signed peaks recorded separately",
+  "checks": "Every case: positive finite conductivity, bounded V, residual and local/global conservation"
+}
