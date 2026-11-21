@@ -6,7 +6,9 @@ Project Instructions and Grading Policy*, Fall 2026, during the November 3 revie
 This review does not establish attendance, instructor approval or a grade.
 **PASS** means local technical evidence; **PENDING** identifies a remaining
 student, instructor or GitHub action. See [the current review](FINAL_REVIEW.md)
-for checks actually executed and platform limits.
+for checks actually executed and platform limits. Publication statuses were
+updated after the November 21 upload of code commit `b7e4118` to public GitHub
+`main`; the report records the independent-download and web-page checks.
 
 ## Software, method and organization
 
@@ -36,21 +38,21 @@ for checks actually executed and platform limits.
 | Applicable initial/time conditions | PASS / not applicable | Steady elliptic model has no time step or initial condition |
 | Original numerical verification retained | PASS locally | `verification.ipynb`: ten executed code cells, four figures, smooth logarithmic solution and grid refinement for retained `legacy_app.py` |
 | Error limits stated | PASS | Exact homogeneous primary is insufficient alone; nonzero layered check included; stair-stepped circles, finite walls, Fourier cutoffs, interpolation and cancellation remain limitations |
-| Saved notebook results visible online | PENDING | Both notebooks contain local saved outputs; latest complete files must be committed/pushed and inspected on GitHub |
+| Saved notebook files/outputs online | PASS files / PENDING visual preview | Both GitHub pages returned HTTP 200; independent download contains all nine embedded figures and saved results. Cloud cannot reach GitHub’s notebook-preview host; student should open both previews once |
 
 ## Repository and submission
 
 | Requirement | Status | Evidence / remaining action |
 | --- | --- | --- |
-| All source, tests and launch files available | PASS locally / PENDING Git | Working tree contains original and survey applications. Survey additions remain untracked until deliberately added to a future commit |
+| All source, tests and launch files available | PASS on GitHub | All 82 project files at code commit `b7e4118` independently downloaded and matched, including the survey upgrade, both entry points and tests |
 | Data needed to run | PASS | No external dataset; all inputs generated from stated parameters |
 | Dependency files | PASS | Pinned direct runtime and optional notebook requirements; clean Python environment review in `FINAL_REVIEW.md` |
 | README covers problem, PDE, method, installation and use | PASS | Current default app and retained legacy app are distinguished; browser and Jupyter launch instructions supplied |
 | Working examples and expected results | PASS | Static solver, receiver, survey, grid and visualization commands; numerical references in guides |
 | Important figures and CSVs | PASS locally | Original analysis artifacts in tracked `analysis/results/`; 2.5D verification results also saved inline in its notebook. Ignored `outputs/` artifacts are regenerable |
-| Reproducible fresh download | PASS on tested platform | Complete working-tree copy and isolated Linux/Python 3.12 environment, including currently untracked source. A checkout of current HEAD alone omits the upgrade |
-| GitHub instructor access | PENDING | Verify current remote branch, complete contents and instructor access after a future upload; local/cloud publication does not prove GitHub accessibility |
-| Complete project uploaded by deadline | PENDING | **November 29, 2026, 11:59 p.m. Mountain Time** per the course document |
+| Reproducible fresh download | PASS on tested platform | Isolated Linux/Python 3.12 reproduction passed; independently cloned GitHub code commit matches the reviewed project byte-for-byte |
+| GitHub availability / instructor access | PASS public availability / PENDING instructor confirmation | Public repository and required file pages returned HTTP 200. Student should check the link from the browser/account used for class |
+| Complete project uploaded by deadline | PASS upload | Pushed November 21, before **November 29, 2026, 11:59 p.m. Mountain Time**; main contains the complete reviewed project |
 | Submit repository link on Canvas | PENDING | Student action after verifying GitHub contents; this review does not submit anything |
 | Written documentation | PASS | README, separate notebooks, numerical/user guides and analysis interpretation |
 
@@ -78,8 +80,9 @@ verification and 10 independent answers. Tests and artifacts are evidence, not
 guaranteed points. Schedule changes, approval, attendance, independent understanding
 and grading remain with the student/instructor.
 
-The current technical review is [FINAL_REVIEW.md](FINAL_REVIEW.md). Its results
-support local technical readiness; Git staging/upload, online content/access
-checks, Canvas submission and presentation remain separate actions. The old
-idea-discussion slide deck is retained as historical material and should not be
-used as the final 2.5D presentation without updating its physics and screenshots.
+The current technical and publication review is [FINAL_REVIEW.md](FINAL_REVIEW.md).
+The complete upgrade is on public GitHub `main`. Remaining actions are the visual
+notebook-preview check, instructor-specific access confirmation, Canvas link
+submission and presentation. The old idea-discussion slide deck is retained as
+historical material and should not be used as the final 2.5D presentation without
+updating its physics and screenshots.

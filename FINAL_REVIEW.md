@@ -12,6 +12,40 @@ artifacts from instructor approval, attendance, GitHub access, submission and
 presentation. The [November 3 review](docs/LEGACY_FINAL_REVIEW.md) is a historical
 record for the original model, not the current test count or Git status.
 
+## GitHub publication update — November 21, 2026
+
+The completed survey upgrade was pushed successfully to public repository
+[GitHub main](https://github.com/mhbilhartz/Geophysical_Computing_final_project_software_design_mhb)
+as code commit [`b7e4118f44a1c56d756e32c20082389a1728c663`](https://github.com/mhbilhartz/Geophysical_Computing_final_project_software_design_mhb/commit/b7e4118f44a1c56d756e32c20082389a1728c663),
+“Complete 2.5D electrical resistivity survey simulator.” The existing local
+`work` branch tracks `origin/main`. The push was a normal fast-forward; no pull
+request or history rewrite was needed. Repository visibility was read from
+GitHub's **Public** label and was not changed.
+
+An independent clone of `main` matched all **82 project files byte-for-byte**,
+including source, tests, analysis figures/CSVs, requirements and documentation.
+The repository and source/analysis/documentation pages returned HTTP 200. The
+rendered README contains the current 2.5D description, 167-test count, Windows
+instructions and working links to the committed local files.
+
+Both notebook pages returned HTTP 200. The independently downloaded notebooks
+retain ten executed code cells each, four original-model figures and five
+2.5D figures, with no saved error outputs. The managed cloud network blocks
+`notebooks.githubusercontent.com`, so the live GitHub notebook preview could
+not be inspected here. **Open both notebook previews in your own browser once**
+to confirm their visual rendering; the published files contain the saved images
+and numerical outputs. GitHub API access was also unavailable, so metadata
+checks used the repository web page and Git transport.
+
+The prepublication Git snapshot later in this report records the Step 9 state.
+Those files have now been added and published. A documentation-only follow-up
+records these checks; the application and verification artifacts remain those
+of the code commit above. Current commit history is visible on GitHub.
+
+Canvas submission, instructor-specific access confirmation and the final
+presentation remain student actions in the [checklist](SUBMISSION_CHECKLIST.md).
+No Canvas action or cloud-environment publication was performed by this Git step.
+
 ## Checks actually executed
 
 A complete copy of the working tree, including currently untracked survey files,
@@ -151,7 +185,10 @@ and environment metadata are under ignored `outputs/final_review/`. These are
 review artifacts, not required application inputs. The notebooks, guides and
 tracked analysis files contain the scientific evidence needed in the repository.
 
-## GitHub and submission readiness
+## Git snapshot at the Step 9 review, before publication
+
+This section records the earlier review snapshot; see the publication update
+above for the completed upload and remote verification.
 
 Local branch: **`work`**. HEAD: **`73badd4`**, “Complete 2D electrical resistivity
 forward modeling simulator.” Remote:
@@ -181,7 +218,7 @@ credentials and the instructor's original PDF are excluded. Candidate-file
 inspection found no credential patterns; this does not certify unknown future
 edits.
 
-**Remaining actions:** review/stage the complete upgrade and publish it to the
+**Actions identified at that review:** review/stage the complete upgrade and publish it to the
 intended GitHub branch; verify both notebooks' saved outputs, source, figures,
 CSVs and documentation links online; confirm instructor access; then submit the
 repository link on Canvas. Repository visibility and remote contents were not
