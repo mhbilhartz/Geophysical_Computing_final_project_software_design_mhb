@@ -124,9 +124,12 @@ class SimulatorApp:
         self.status.object = "Parameters changed. Click Run Simulation; displayed results still describe the last successful run."
 
     def parameters(self):
+        # Presets are authoritative; a stale numeric-widget update must not
+        # silently override the material selected for a simulation.
+        resistivity = PRESETS.get(self.material.value, self.tunnel.value)
         return SimulationParameters(depth=self.depth.value, radius=self.radius.value,
                                     center_x=self.center_x.value, host_resistivity=self.host.value,
-                                    tunnel_resistivity=self.tunnel.value, nx=self.grid.value)
+                                    tunnel_resistivity=resistivity, nx=self.grid.value)
 
     def run(self, event=None):
         self.run_button.disabled = self.reset_button.disabled = True

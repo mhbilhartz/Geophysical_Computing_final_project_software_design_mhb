@@ -29,6 +29,19 @@ class AppTests(unittest.TestCase):
         self.assertEqual(app.parameters().tunnel_resistivity, 1e8)
         self.assertTrue(app.tunnel.disabled)
 
+    def test_selected_preset_overrides_stale_numeric_widget(self):
+        app = self.app
+        app.material.value = 'Water-filled'
+        app.tunnel.value = 1e8
+        app.run()
+        self.assertEqual(app.status.alert_type, 'success')
+        self.assertEqual(app.latest.parameters.tunnel_resistivity, 5)
+        app.material.value = 'Air-filled'
+        app.tunnel.value = 5
+        self.assertEqual(app.parameters().tunnel_resistivity, 1e8)
+        app.material.value = 'Custom'
+        self.assertEqual(app.parameters().tunnel_resistivity, 5)
+
     def test_radius_updates_position_limits_and_clamps_geometry(self):
         app = self.app
         app.depth.value = 5.5

@@ -3,20 +3,45 @@
 **Molly Bilhartz · GPGN 436, Geophysical Computing · Fall 2026**
 
 Motivated by our field investigation of the historic **Onyx mine in Steamboat
-Springs, Colorado**, this project asks how tunnel depth, radius, and electrical
-contrast affect potential and current flow near the surface. It is a Python
-finite-difference **2D DC forward model**, with a circular tunnel in a uniform
-host and a Panel interface. It is not an ERT electrode-array model or inversion.
+Springs, Colorado**, this project explores how tunnel properties affect DC
+surface measurements. The default Panel application is now a **2.5D point-electrode
+survey forward modeler** for Wenner, Schlumberger and dipole–dipole arrays, with
+visible Python finite differences and a circular tunnel in a uniform host.
+Conductivity is independent of cross-line distance while point-source current
+spreads in 3D. No specialized geophysical simulation package or inversion is used.
 No Onyx field data or instrument-detection threshold is used.
 
-- [Numerical solver](tunnel_resistivity/solver.py) and [tunnel geometry](tunnel_resistivity/geometry.py)
-- [Panel interface](tunnel_resistivity/app.py), launched through [app.py](app.py)
-- [Executed analytical verification](verification.ipynb)
+- [2.5D solver](tunnel_resistivity/solver_2p5d.py), [receivers](tunnel_resistivity/receivers.py),
+  [surveys](tunnel_resistivity/survey.py), and [grid planning](tunnel_resistivity/grid.py)
+- [Live Panel interface](tunnel_resistivity/survey_app.py), launched through [app.py](app.py)
+- [Original fixed-voltage solver](tunnel_resistivity/solver.py) and
+  [original interface](tunnel_resistivity/app.py), launched through [legacy_app.py](legacy_app.py)
+- [Executed original 2D verification](verification.ipynb) and
+  [2.5D source/receiver verification](verification_2p5d.ipynb)
 - [Geophysical analysis and interpretation](analysis/README.md)
 - [Submission checklist](SUBMISSION_CHECKLIST.md) and [final reproducibility review](FINAL_REVIEW.md)
 - [AI-use disclosure](AI_USE.md) and [references](REFERENCES.md)
 
 ## Install and launch
+
+**Survey-upgrade status:** Steps 1–6 are connected by the
+[Step 7 live interface](docs/LIVE_APP.md). Tunnel radius/depth sliders, material
+presets/custom resistivity, electrode geometry and automatic/manual grids now
+rerun the existing survey backend automatically. A background worker coalesces
+rapid edits, cancels superseded work between source solves, and prevents stale
+results from replacing the latest request. [Step 8 visualizations](docs/VISUALIZATIONS.md)
+add selected-measurement potential, current and anomaly maps, a surface-potential
+difference curve, and a survey configuration map alongside profiles and diagnostics.
+The [Step 9 final review](FINAL_REVIEW.md) records current regression,
+clean-install and notebook reproduction evidence, plus remaining GitHub and
+submission actions. The [original review](docs/LEGACY_FINAL_REVIEW.md) is retained
+as historical evidence for the fixed-voltage model.
+
+Numerical details: [electrode geometry](docs/ELECTRODE_GEOMETRY.md),
+[2.5D source pairs](docs/SOURCE_PAIR_2P5D.md), [receiver calculations](docs/RECEIVER_MEASUREMENTS.md),
+[verification](docs/VERIFICATION_2P5D.md), [surveys](docs/SURVEYS.md), and
+[grid/domain planning](docs/GRIDS.md). The two executed verification notebooks
+remain separate for the original fixed-voltage and new 2.5D models.
 
 Use **Python 3.12**. Run all commands from the repository root after downloading
 or cloning the complete project. No external dataset is needed.
@@ -41,8 +66,24 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m panel serve app.py --show
 ```
 
+### Windows Git Bash with an existing simulation environment
+
+If your working environment is named `.sim-venv`, use its interpreter directly:
+
+```bash
+./.sim-venv/Scripts/python.exe -m pip install -r requirements.txt
+./.sim-venv/Scripts/python.exe -m panel serve app.py --show
+```
+
+Use your actual environment name. These are terminal commands. For a notebook,
+use the Python example below and select the kernel for this environment; a new
+terminal tab alone does not select a different Jupyter kernel.
+
 Panel opens the app in a local browser. Keep its terminal running; stop with
-Ctrl+C. The initial air-filled simulation runs automatically. Python callbacks
+Ctrl+C. The initial air-filled survey runs automatically in the background.
+Changes rerun after a 400 ms pause; **no Run button is needed**. Full surveys take
+seconds or longer depending on the selected grid and number of source pairs.
+Python callbacks
 require this live server; a static HTML export cannot rerun the solver. Remote
 machines require their supported port-access mechanism; no public deployment is
 configured here. Omit `--show` on a headless machine.
@@ -63,7 +104,87 @@ export JUPYTER_CONFIG_DIR=/tmp/tunnel-jupyter-config
 export JUPYTER_RUNTIME_DIR=/tmp/tunnel-jupyter-runtime
 ```
 
-## Use the controls and inspect results
+## Use the live controls and inspect results
+
+| Control | Meaning |
+| --- | --- |
+| Tunnel radius and center depth | Sliders in meters; depth must exceed radius by at least 0.5 m in the UI |
+| Tunnel horizontal position | World x in meters; automatic bounds include the tunnel and electrode line |
+| Host/tunnel resistivity | Ω·m; Air-filled=1e8, Water-filled=5; Custom enables the tunnel value |
+| Array | Wenner, Schlumberger, or dipole–dipole |
+| Electrode count, line pitch and first x | A fixed physical surface line; electrode positions are not snapped to cells |
+| Maximum level | All valid translations for levels 1 through the selected level |
+| Schlumberger MN / pitch | Independent receiver spacing; displayed for Schlumberger |
+| Dipole length / pitch | AB=MN; displayed for dipole–dipole |
+| Source current | Positive amperes, with A injecting and B withdrawing |
+| Automatic grid | Cell-size upper bound and boundary-padding factor |
+| Manual grid | Left/right faces, bottom depth, nx and nz |
+
+Spacing/level limits adjust to keep the requested array on the physical line.
+Source/receiver conventions and counts are explained in [the live-app guide](docs/LIVE_APP.md).
+Material presets are illustrative. Conductivity stays positive and finite;
+air is never represented by zero conductivity. Automatic grid sizes are planning
+heuristics, not error-certified boundaries. Invalid geometry, resistivity, or
+oversized plans produce an error while retaining clearly labeled completed data.
+
+Moving sliders or editing fields updates the requested plan immediately. After
+a brief pause, a per-session background calculation starts. Changes during a
+calculation signal cancellation, effective after the current sparse source solve
+finishes; only the latest requested snapshot may publish. Controls stay active.
+The status reports completed source pairs. Old data remain labeled with their
+own parameters until a new survey completes, and CSV download is disabled while
+the request is pending/invalid. Reset restores defaults and reruns automatically.
+
+The result views contain a resistivity cross-section and electrode line,
+apparent-resistivity profiles at each level, ordered measurement data and
+mode residual/balance diagnostics. The Latest/Previous tabs retain two completed
+snapshots. CSV download includes geometry/settings and numerical data for the
+displayed completed snapshot. These profiles are forward data, not a depth image
+or inversion. Finite walls, stair-stepped circles and Fourier integration still
+need sensitivity checks.
+
+Below the completed survey, **Inspect measurement from displayed survey** chooses
+the A/B source pair and M/N receivers for the field explorer. Its three tabs show
+four field maps, surface ΔV, and measured survey configurations. The selected
+field PNG download follows the Latest/Previous snapshot. Current arrows show
+direction; colors show magnitude. The configuration map's vertical axis is
+spacing level, not depth. See [the visualization guide](docs/VISUALIZATIONS.md)
+for scales, caching and interpretation limits.
+
+**Try the controls:**
+
+1. Start with defaults, then choose Water-filled; wait for the completion status
+   and compare with the previous snapshot.
+2. Choose Custom and set tunnel resistivity equal to the host. Every apparent
+   resistivity should recover that host value; the homogeneous reference is
+   analytical in this primary/secondary solver.
+3. Move radius/depth sliders. The plan and results update automatically after
+   computation. Rapid movement is coalesced rather than queueing every position.
+4. Change arrays, spacing, levels or grid mode and inspect source counts,
+   grid dimensions, signed K and VM−VN. Dipole–dipole normally has negative K
+   and homogeneous voltage under this label ordering.
+
+For JupyterLab, use your project environment's kernel:
+
+```python
+import panel as pn
+pn.extension()
+from tunnel_resistivity.survey_app import SurveySimulatorApp
+simulation = SurveySimulatorApp()
+simulation.view
+```
+
+The kernel must remain running. Before replacing that instance, call
+`simulation.close()` to cancel its own worker; this does not stop other kernels.
+See [LIVE_APP.md](docs/LIVE_APP.md) for launch and test details.
+
+### Original fixed-voltage comparison application
+
+Launch `python -m panel serve legacy_app.py --show` to use the retained original
+interface and four field plots. The instructions/results in this subsection
+apply to that original model, with fixed side voltages and current per unit
+cross-line thickness, rather than point-electrode survey data.
+
 
 | Control | Meaning and supported values |
 | --- | --- |
@@ -109,7 +230,7 @@ it does not establish geometric accuracy.
 3. Change depth/radius and compare grids. Coarse-grid warnings are numerical
    cautions, not evidence that a refined result is exact.
 
-At the default **160×80** UI grid, depth 15 m, radius 5 m, and host 100 Ω·m:
+At the original application's default **160×80** UI grid, depth 15 m, radius 5 m, and host 100 Ω·m:
 
 | Model | Total current (A/m) | Peak absolute surface anomaly (mV) |
 | --- | ---: | ---: |
@@ -119,7 +240,7 @@ At the default **160×80** UI grid, depth 15 m, radius 5 m, and host 100 Ω·m:
 
 ## Governing equation and numerical method
 
-Steady conduction satisfies
+Steady conduction away from source electrodes satisfies
 
 $$
 \nabla\cdot(\sigma\nabla V)=0,\qquad \mathbf J=-\sigma\nabla V,
@@ -129,6 +250,38 @@ $$
 Coordinates x and depth z are in meters, V in volts, conductivity σ in S/m,
 resistivity ρ in Ω·m, and current density J in A/m². The model is steady elliptic:
 there is **no initial condition and no time step**.
+In the point-electrode application, surface injection is supplied by the
+source/return primary field. The source-free equation does not apply at the
+singular electrode points themselves.
+
+### Live 2.5D point-electrode application
+
+The new solver separates an analytical homogeneous primary from numerical
+secondary Fourier modes. With conductivity independent of y,
+
+$$
+A_\sigma(k)\widehat V_s=
+-\partial_x(\sigma\partial_x\widehat V_s)
+-\partial_z(\sigma\partial_z\widehat V_s)+k^2\sigma\widehat V_s.
+$$
+
+The contrast-forcing right-hand side, harmonic interfaces and primary treatment
+are derived in [the source-pair notes](docs/SOURCE_PAIR_2P5D.md). The top secondary
+normal derivative is zero; side/bottom secondary potential is zero. The exact
+primary carries surface injection and fixes total potential at artificial walls.
+The physical field at y=0 is Vprimary+∫Vhat_secondary dk/π. Sources are amperes,
+not A/m line sources. The existing Python assembly and SciPy sparse solves remain
+visible; the interface calls this backend rather than implementing another solver.
+
+Receiver voltages use the analytical surface primary plus reconstructed secondary.
+For VM−VN, signed K=2π/(1/AM−1/BM−1/AN+1/BN) gives apparent resistivity K·ΔV/I
+in Ω·m. Homogeneous recovery is exact by construction; the separate notebook also
+checks a nonzero layered-earth response and manufactured spatial convergence.
+See [receiver notes](docs/RECEIVER_MEASUREMENTS.md) and
+[verification](verification_2p5d.ipynb). The original method below belongs to
+`legacy_app.py` and its independent verification notebook.
+
+### Original fixed-voltage 2D method
 
 The rectangular boundary conditions are V=1 V at the left, V=0 V at the right,
 and zero normal current at the top/bottom. Insulation blocks current; it does
@@ -180,6 +333,11 @@ Linux/macOS, activated environment:
 python -m unittest discover -s tests -v
 python -m tunnel_resistivity.demo
 python -m tunnel_resistivity.tunnel_demo
+python -m tunnel_resistivity.demo_2p5d
+python -m tunnel_resistivity.receiver_demo
+python -m tunnel_resistivity.survey_demo
+python -m tunnel_resistivity.grid_demo
+python -m tunnel_resistivity.visualization_demo
 ```
 
 Windows PowerShell:
@@ -188,13 +346,28 @@ Windows PowerShell:
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 .\.venv\Scripts\python.exe -m tunnel_resistivity.demo
 .\.venv\Scripts\python.exe -m tunnel_resistivity.tunnel_demo
+.\.venv\Scripts\python.exe -m tunnel_resistivity.demo_2p5d
+.\.venv\Scripts\python.exe -m tunnel_resistivity.receiver_demo
+.\.venv\Scripts\python.exe -m tunnel_resistivity.survey_demo
+.\.venv\Scripts\python.exe -m tunnel_resistivity.grid_demo
+.\.venv\Scripts\python.exe -m tunnel_resistivity.visualization_demo
 ```
 
-There are **42 tests**, covering analytical/physical solver checks, harmonic
+There are **167 tests**, covering analytical/physical solver checks, harmonic
 interfaces, geometry, current conservation, UI callbacks, plot data/axes,
-analysis measures, and failure handling. They do not require a browser. Historical
+analysis measures, electrode geometry, the 2.5D solver, receiver measurements,
+signed apparent resistivity, survey geometry/forward calls/source reuse,
+automatic/manual grid planning and model preparation, live parameter handling,
+background generation/cancellation, failure handling, selected-source field reuse,
+receiver labels, snapshot-safe PNG exports, and field/surface/survey plot data.
+They do not require a browser. The 2.5D tests include a nonzero layered-earth
+response, manufactured-mode refinement, Fourier integration and domain checks;
+see [the Step 2 numerical notes](docs/SOURCE_PAIR_2P5D.md) and
+[Step 3 receiver benchmarks](docs/RECEIVER_MEASUREMENTS.md). Historical
 checks are recorded in [TESTING_REPORT.md](TESTING_REPORT.md); the final clean
-review is in [FINAL_REVIEW.md](FINAL_REVIEW.md).
+review is in [FINAL_REVIEW.md](FINAL_REVIEW.md). Historical milestone test counts
+in the numerical guides describe their respective stages; the current suite has
+167 tests.
 
 Static examples write regenerable files under ignored `outputs/`. The homogeneous
 example should have linear V, Jx=1e-4 A/m², Jz≈0 and total current 0.005 A/m.
@@ -204,7 +377,7 @@ It supports `--help`, geometry/resistivity/grid arguments, and `--output-dir`.
 ## Reproduce analytical verification
 
 [verification.ipynb](verification.ipynb) imports the **same production solver**
-independently of Panel. It derives the exact logarithmic solution for
+as the retained original application (`legacy_app.py`), independently of Panel. It derives the exact logarithmic solution for
 `σ(x)=0.01*(1+2*x/100)` S/m on a 100×50 m domain with the same boundaries.
 The exact potential is `V(x)=1-log(1+2*x/100)/log(3)`, evaluated at cell centers.
 Relative RMSE is `RMSE/abs(V_left-V_right)`, not division by local V near zero.
@@ -252,7 +425,37 @@ Windows uses the same arguments after `.\.venv\Scripts\python.exe -m nbconvert`.
 Local Jupyter kernels require loopback sockets; the cloud command sandbox needs
 its normal execution-tool permission for them. No checks should be bypassed.
 
-## Reproduce geophysical experiments
+### New 2.5D source/receiver notebook
+
+Open [verification_2p5d.ipynb](verification_2p5d.ipynb) in JupyterLab and select
+the same project environment's kernel:
+
+```bash
+python -m jupyterlab verification_2p5d.ipynb
+```
+
+Use **Restart Kernel and Run All Cells**, then save. Its larger mesh/domain
+experiments may take several minutes. Embedded plots/tables remain readable
+without rerunning. CSV/JSON and PNG/PDF copies are regenerated under ignored
+`outputs/verification_2p5d/`. For command-line reexecution to a separate copy:
+
+```bash
+python -m nbconvert --to notebook --execute verification_2p5d.ipynb --output verification_2p5d.reexecuted --output-dir outputs/verification_2p5d --ExecutePreprocessor.timeout=360 --ExecutePreprocessor.kernel_name=tunnel-resistivity
+```
+
+On Windows, prefix the module commands with `.\.venv\Scripts\python.exe` in
+place of `python`. The same commands work with another environment name when
+using that environment's interpreter and matching Jupyter kernel.
+This notebook imports the production 2.5D backend now used by the live Panel
+application (`app.py`). It does not replace the original 2D verification.
+The [verification guide](docs/VERIFICATION_2P5D.md) explains the analytical
+references, error denominators and limits on convergence claims.
+
+## Reproduce original fixed-voltage geophysical experiments
+
+These historical experiments use the original 2D boundary-value problem, not
+the new surface electrode surveys. Their reported A/m currents and potential
+anomalies must not be interpreted as apparent resistivity.
 
 ```bash
 python -m analysis.run_experiments
@@ -307,32 +510,53 @@ and [grid/domain figure](analysis/results/05_grid_domain_sensitivity.png).
 - A circular 2D cross-section represents a tunnel infinitely long perpendicular
   to the model plane; finite ends, irregular geology, topography and electrode
   contact effects are omitted.
-- Fixed side voltages are idealized and do not represent an actual ERT array.
+- The original model's fixed side voltages are idealized. The live 2.5D app uses
+  point-electrode arrays, with approximate primary-valued outer walls.
 - Stair-stepped circles change area/interface shape with resolution; surface
   values are first-row zero-gradient reconstructions. Small residuals and good
   conservation do not establish geometric accuracy.
 - Large contrasts affect conditioning; air is a finite-resistivity approximation.
-- Surface potential differences are not measured apparent-resistivity anomalies.
-  No instrument noise, electrode spacing or site calibration is modeled.
+- Original-model surface potential anomalies are not apparent resistivity.
+  The new app explicitly models electrode spacing and apparent resistivity, but
+  neither model includes instrument noise, contact effects or site calibration.
 - The experiments explain electrical physics relevant to underground voids but
   **do not establish actual Onyx mine tunnel detectability**.
 
 ## Repository map
 
 ```text
-app.py                         Panel launch entry point
+app.py                         Live 2.5D survey Panel entry point
+legacy_app.py                  Original fixed-voltage Panel entry point
 tunnel_resistivity/
   solver.py                    Visible numerical assembly and sparse solve
   geometry.py                  Circular conductivity array
+  electrodes.py                Surface electrode geometry (survey Step 1)
+  solver_2p5d.py                Fourier source-pair backend (survey Step 2)
+  demo_2p5d.py                  Static source-pair comparison
+  receivers.py                 Surface voltages and apparent resistivity (Step 3)
+  receiver_demo.py             Static single-measurement comparisons and CSV
+  survey.py                    Surface survey planning, forwarding and CSV (Step 5)
+  survey_demo.py               Reproducible small surveys and profile plots
+  grid.py                      Domain/grid planning and model preparation (Step 6)
+  grid_demo.py                 Automatic footprints and grid/domain comparisons
   simulation.py                UI parameter validation and orchestration
-  app.py                       Panel controls and comparison views
+  app.py                       Original fixed-voltage controls and views
+  survey_simulation.py         Immutable live survey settings and orchestration
+  live.py                      Debounce, background work and generation protection
+  survey_app.py                Live Panel survey controls and completed views
+  fields.py                    Selected-source solves and bounded field cache
+  survey_plotting.py           Model/profile, field, surface and survey maps
+  visualization_demo.py        Reproducible 2.5D field/map PNG/PDF and arrays
   plotting.py, diagnostics.py  Shared plots and face-current diagnostics
   demo.py, tunnel_demo.py      Static working examples
-tests/                         42 automated tests
+tests/                         167 automated tests
 verification.ipynb             Executed analytical verification (saved outputs)
+verification_2p5d.ipynb        Executed 2.5D backend verification (survey Step 4)
 analysis/run_experiments.py     Reproducible controlled experiments
 analysis/README.md             Scientific interpretation
 analysis/results/              Tracked CSV, PNG, PDF and provenance files
+docs/                          Numerical/user guides and historical review
+presentations/                 Historical original-model idea discussion
 requirements*.txt              Runtime and optional notebook dependencies
 AI_USE.md, REFERENCES.md        Assistance disclosure and references
 SUBMISSION_CHECKLIST.md         PDF requirements and remaining student actions

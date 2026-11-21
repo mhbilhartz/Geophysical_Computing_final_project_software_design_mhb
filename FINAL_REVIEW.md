@@ -1,235 +1,195 @@
-# Final repository and reproducibility review
+# Final review: 2.5D survey application
 
-Reviewed November 3, 2026, against the original GPGN 436/536 Fall 2026 PDF.
+Reviewed **November 21, 2026** (Mountain Time). **Local technical result: PASS
+on Linux/Python 3.12.** The current default application is the 2.5D point-electrode
+survey forward modeler in `app.py`; the original fixed-voltage application is
+retained as `legacy_app.py`. This review added documentation corrections and
+reproduction evidence, with no changes to Python source, tests, numerical
+methods or the two saved verification notebooks.
 
-**Technical result: PASS on Linux/Python 3.12. Ready for student review, not yet
-submitted.** Nothing was committed, pushed, deployed or published by this review.
-The instructor's distinctness/access checks, Canvas submission, attendance and
-independent presentation remain student/instructor actions. See the complete
-[assignment checklist](SUBMISSION_CHECKLIST.md) for PASS/PENDING statuses rather
-than treating those obligations as automatically satisfied by passing tests.
+The [assignment checklist](SUBMISSION_CHECKLIST.md) distinguishes local technical
+artifacts from instructor approval, attendance, GitHub access, submission and
+presentation. The [November 3 review](docs/LEGACY_FINAL_REVIEW.md) is a historical
+record for the original model, not the current test count or Git status.
 
-## Fresh-install evidence
+## Checks actually executed
 
-A separate copy of the tracked project was made under `/tmp`, excluding the old
-`.venv`, caches and ignored outputs. A new Python **3.12.14** virtual environment
-was created without `--system-site-packages`. Its configuration has
-`include-system-site-packages = false`, `ENABLE_USER_SITE = False`, and scientific
-packages resolve inside that new environment. The original development environment
-was not used to provide application dependencies.
+A complete copy of the working tree, including currently untracked survey files,
+was created under `/tmp/gpgn-final-review`. Git metadata, the development `.venv`,
+caches and ignored outputs were excluded. A new Python **3.12.14** environment
+was created there with `include-system-site-packages = false` and user-site
+imports disabled. Scientific imports resolve inside that new environment.
 
 | Executed check | Result |
 | --- | --- |
-| Install `requirements.txt` into empty environment | PASS; all dependencies downloaded/installed using verified package transport |
-| Runtime-only automated suite, before Jupyter installation | PASS: 42 tests, none skipped |
-| Install `requirements-notebook.txt` | PASS |
-| `pip check` | PASS: no broken requirements |
-| Full suite after notebook-tool install and final whitespace cleanup | PASS: 42 tests, none skipped |
-| Reexecute analytical notebook from fresh kernel | PASS: all 10 code cells, no error outputs, 4 embedded figures |
-| Compare notebook error tables/conclusions | PASS: saved Markdown outputs match the submitted notebook |
-| Recreate geophysical experiments | PASS: 53 records, 45 unique tunnel solves, 7 references |
-| Compare summary CSV | PASS: 53 rows, 2,116 numeric cells, maximum absolute difference 0 |
-| Compare surface-profile CSV | PASS: 13,440 rows, 53,760 numeric cells, maximum absolute difference 0 |
-| Compare derived-statistics CSV | PASS: 25 rows/values, maximum absolute difference 0 |
-| Compare five regenerated PNGs | PASS: dimensions and pixels identical to saved figures |
-| Regenerate five PDF figures | PASS; PDFs are export artifacts, not compared bytewise because metadata may vary |
-| Panel startup from the clean environment | PASS: HTTP 200 and initialized application |
-| Chromium interaction | PASS: initial plots/controls, water preset, Run, comparison tabs, custom matched material, Reset; no JavaScript errors |
-| Static homogeneous and air/water example commands | PASS; analytical error and current outputs agree with README expectations |
-| Relative documentation links and staged content | PASS; checked after final staging |
+| Restored environment dependency check | PASS: `pip check` reports no broken requirements |
+| Restored full suite, before documentation changes | PASS: **167 tests in 94.802 s**, none skipped |
+| Install pinned runtime requirements into empty environment | PASS |
+| Full suite with runtime dependencies only | PASS: **167 tests in 105.267 s**, none skipped |
+| Install optional notebook requirements; final `pip check` | PASS |
+| Reexecute original notebook in fresh kernel | PASS: ten code cells, four embedded figures, no error outputs |
+| Reexecute 2.5D notebook in fresh kernel | PASS: ten code cells, five embedded figures, **26 acceptance checks**, no error outputs |
+| Compare both notebooks with saved outputs | PASS: all nine figures pixel-identical; original numerical Markdown identical; 170 scientific summary values in 2.5D summary match, excluding runtime/version metadata |
+| Reproduce original geophysical experiments | PASS: 53 records, 45 distinct tunnel solves, seven homogeneous references |
+| Compare original analysis CSVs | PASS: all 53 summary rows, 13,440 surface rows and 25 statistics rows match; maximum numeric difference **0** |
+| Compare original analysis figures | PASS: all five PNGs pixel-identical; five PDFs regenerated |
+| Run all seven README static-example commands | PASS; visualization numerical summary exactly matches its saved summary |
+| Current and legacy Panel startup from clean environment | PASS: HTTP 200 and initialized applications |
+| Native Chromium interactions against clean server | PASS: **14 checks**, no JavaScript page errors |
+| Live notebook interface in isolated clean kernel | PASS: three smoke-test cells, automatic air/water/custom fields, zero homogeneous anomaly, PNG state and both workers closed |
+| Local documentation/notebook links and file-path review | PASS; current source/notebook content is present; environment/caches/credentials excluded from candidate files |
+| Protected-file hashes and whitespace | PASS: Python source/tests, both notebooks and tracked scientific results unchanged; `git diff --check` clean |
 
-The app server ran with the clean environment's Python. Installed system Chromium
-and a separate browser-driving tool were used to inspect it; browser automation
-is not an application dependency. These are Linux results. **Windows PowerShell
-and macOS execution were not tested**; platform-specific instructions are supplied
-without claiming otherwise. A fresh Python environment is not a new operating
-system or container.
+Notebook reruns wrote separate copies; the submitted notebooks were not saved
+over. The 2.5D comparison excludes elapsed times and dependency-version metadata,
+which legitimately differ on rerun. Its scientific summary and figures agree
+with the saved evidence. The automated tests are the existing 167 tests; no
+implementation-mirroring tests or extra application features were added.
 
-Direct runtime versions are NumPy 2.3.5, SciPy 1.17.0, Matplotlib 3.10.8 and Panel
-1.10.0. Notebook tools are JupyterLab 4.6.5, nbconvert 7.17.2 and ipykernel 7.4.0.
-Transitive dependencies were resolved afresh, including pandas 3.1.0. Requirements
-pin direct dependencies, not a complete per-platform dependency lock.
+The browser checks covered default automatic fields; finite nine-measurement
+CSV; PNG bytes/filename; water/custom updates; Previous/Latest ownership; surface
+and survey-map tabs; homogeneous recovery; Schlumberger receiver spacing;
+dipole length and signed K; current scaling; invalid manual domain; Reset; and
+the retained original app's Run button. Doubling current doubled voltage while
+leaving apparent resistivity unchanged. The notebook smoke test checks kernel
+callbacks; it is not a full browser test of the JupyterLab frontend.
 
-No unexpected numerical warnings or unresolved test failures occurred. The cloud
-kernel needed normal local-socket execution permission; Jupyter printed a local
-TCP transport notice, not a numerical failure. The headless/writable-cache
-settings documented in the README handle this machine's read-only home. The
-browser and test server were stopped after validation.
+Direct runtime versions were NumPy 2.3.5, SciPy 1.17.0, Matplotlib 3.10.8 and
+Panel 1.10.0. The clean install resolved Param 2.4.2, Bokeh 3.10.2 and pandas
+3.1.1. Optional tools were JupyterLab 4.6.5, nbconvert 7.17.2 and ipykernel 7.4.0.
+Requirements pin direct dependencies, not a complete transitive or cross-platform
+lock. **Windows and macOS execution were not tested.**
 
-## Notebook and scientific claims
+Package downloads and local kernel/server sockets required the cloud tool's
+normal approved execution outside its restricted command sandbox. TLS checks
+were retained. Writable cache settings are documented in the README. The kernels
+printed a local TCP transport notice; no numerical check failed. Browser
+sessions, isolated test kernels and the temporary Panel server were closed.
 
-The original `verification.ipynb` was **not overwritten**: its complete byte hash
-matches the pre-review value. Reexecution wrote the separate ignored file
-`outputs/verification/verification.reexecuted.ipynb` in the clean copy. The
-submission notebook retains all executed plots/tables and is tracked/staged.
+## Numerical results and interpretation
 
-| Claim checked against reproduced results | Result |
+| Reproduced result | Value / implication |
 | --- | --- |
-| Smooth-conductivity grid convergence | Measured RMSE orders 1.997472, 1.999365, 1.999841; finest RMSE 7.90049e-6 V |
-| Depth response | 7.5→35 m: air 38.309→4.252 mV; water 26.008→3.606 mV |
-| Radius response | 2→9 m: air 2.710→52.147 mV; water 2.214→40.445 mV; descriptive powers 1.967/1.936 |
-| Conductive/resistive response | Opposite signed patterns; current concentrates/diverts; matched material gives zero anomaly |
-| Current conservation | Across analysis, maximum relative boundary imbalance 5.41e-12; residual at most 1.11e-15 A/m |
-| Grid dependence | Medium→fine peak changes −5.45%/−4.23%; water is nonmonotonic over three grids |
-| Side-boundary dependence | Width 100→200 m: normalized peaks increase **17.62% air / 14.15% water** |
-| Remaining side/bottom influence | Width 150→200 m still changes normalized peaks 5.39%/4.36%; height 50→100 m changes peaks −5.08%/−3.98% |
+| Original smooth-conductivity grid orders | 1.997472, 1.999365, 1.999841; finest RMSE 7.90049e−6 V |
+| 2.5D variable-conductivity manufactured-mode orders | **1.988765, 1.997145, 1.999283**, approaching second order |
+| Independent layered reference | Exact receiver voltage 1.805438647386 V; apparent resistivity 113.439055823 Ω·m |
+| Layered 192×128 benchmark | Apparent-resistivity error **0.00254467%**; secondary receiver-voltage error **0.0214796%** |
+| Default selected Wenner measurement | A=35, B=65, M=45, N=55 m; I=0.1 A; host 100 Ω·m, tunnel center (50,15) m and radius 5 m |
+| Homogeneous / air / water selected apparent resistivity | **100.000000 / 105.761873 / 95.175462 Ω·m**, on the default 128×64 automatic grid |
+| Corresponding secondary receiver voltage | **0 / +0.00917030642 / −0.00767849026 V** |
 
-Normalization is A/E0 with E0=1 V/W, so the width comparison separates changing
-forcing from boundary displacement. It is not apparent resistivity. No domain
-independence, circular-interface convergence order, field validation or actual
-Onyx instrument detectability is claimed. The 2D, isotropic, simplified-material,
-infinitely long tunnel and idealized side-electrode assumptions remain limitations.
+Homogeneous recovery is exact by construction in the primary/secondary method;
+that check alone cannot establish accuracy. The nonzero layered reference and
+manufactured refinement support the numerical method. Layered receiver error
+is nonmonotonic under refinement because boundary, integration and interpolation
+errors can cancel; this result remains in the notebook rather than being forced
+to exhibit second-order receiver convergence.
 
-## Changes and organization
+Conductivity remains positive and finite, including the air approximation.
+Conservative harmonic face fluxes and Fourier-mode balance are tested. The
+current arrows are approximate cell-center directions; they are not the face
+fluxes used for balance. In 2.5D, a two-dimensional divergence check omitting the
+cross-line/Fourier term is incomplete. The survey map's spacing-level axis is
+not depth and is not an inversion.
 
-- Reorganized the accumulated README into final user instructions and scientific
-  explanations, including PowerShell commands and working relative links.
-- Corrected stale text saying domain sensitivity was unassessed; distinguished
-  160×80 UI results from 240×120 analysis results and highlighted the 14–18% effect.
-- Added `SUBMISSION_CHECKLIST.md`, `REFERENCES.md`, and this final review.
-- Shortened the AI-use disclosure while retaining contributions/responsibility.
-- Expanded `.gitignore` for environment files, logs and OS/test caches.
-- Removed generated project `__pycache__` directories. Existing ignored historical
-  `outputs/` evidence and the development `.venv` were retained locally, but are
-  excluded from submission. Important analysis results remain tracked.
-- Removed only trailing blank lines from `app.py`, `diagnostics.py`, and
-  `plotting.py` inside the package; their parsed Python ASTs are identical.
-- Kept all solver/geometry/method logic, tests, analysis calculations, saved
-  analysis data and original notebook outputs unchanged. Distinct working
-  examples were retained; no duplicate solver or new application feature was added.
+Finite walls, quadrature cutoffs, stair-stepped tunnel geometry, sharp contrasts
+and surface reconstruction still require sensitivity checks. The model has a
+flat surface and an infinitely long tunnel axis. Finite 3D tunnel ends, contact
+resistance, field noise and inversion are absent. No Onyx field data or actual
+instrument-detectability claim is made. Original analysis voltage anomalies are
+for the fixed-voltage model and are not apparent resistivity.
 
-The scientific tables/figures are in tracked `analysis/results/`, not just ignored
-outputs. No credentials, private keys, environment directory, kernel connection
-files, unrelated attachments or instructor PDF are staged. Text-pattern scanning
-and manual file-type/path review found no secret material; this is an inspection,
-not a universal guarantee for unknown future edits.
+## Documentation corrections
 
-## Exact reproduction commands
+- Replaced the obsolete 42-test final report with this current review; archived
+  the original report with working links.
+- Updated the assignment checklist for the current solver, boundaries,
+  verification notebook, automatic controls, visualizations and Git state.
+- Corrected guides that still described completed receiver/grid/UI/field stages
+  as pending, while keeping historical test evidence labeled by milestone.
+- Added Windows Git Bash instructions using the existing `.sim-venv` interpreter
+  and clarified that terminal tabs do not select Jupyter kernels.
+- Clarified that the source-free PDE applies away from singular source points.
+- Labeled the original analysis and idea-discussion presentation material by
+  model and date. The historical slide deck itself was not redesigned.
+- Updated the AI-use disclosure. Solver methods, saved numerical results and
+  notebook outputs were retained.
 
-After creating/activating a Python 3.12 environment at the repository root, as
-shown for both operating systems in [README.md](README.md):
+## Reproduction commands
+
+From the repository root, create/activate a Python 3.12 environment as shown in
+[README.md](README.md). For just the app/tests, install `requirements.txt`.
+For notebook reproduction, use the superset below:
 
 ```bash
 python -m pip install -r requirements-notebook.txt
+python -m pip check
 python -m unittest discover -s tests -v
 python -m ipykernel install --prefix .venv --name tunnel-resistivity --display-name "Python (tunnel-resistivity)"
 python -m nbconvert --to notebook --execute verification.ipynb --output verification.reexecuted --output-dir outputs/verification --ExecutePreprocessor.timeout=180 --ExecutePreprocessor.kernel_name=tunnel-resistivity
-python -m analysis.run_experiments
+python -m nbconvert --to notebook --execute verification_2p5d.ipynb --output verification_2p5d.reexecuted --output-dir outputs/verification_2p5d --ExecutePreprocessor.timeout=360 --ExecutePreprocessor.kernel_name=tunnel-resistivity
+python -m tunnel_resistivity.visualization_demo
+python -m tunnel_resistivity.survey_demo
 python -m panel serve app.py --show
 ```
 
-`requirements-notebook.txt` includes the runtime requirements. The UI alone needs
-only `requirements.txt`. On Windows, prepend these module commands with
-`.\.venv\Scripts\python.exe` instead of `python`; no activation policy change is
-needed. On a headless/read-only-home cloud machine use the environment settings
-in the README and omit `--show`.
+Use the actual environment prefix if it is named `.sim-venv`. On Windows Git
+Bash, replace `python` with `./.sim-venv/Scripts/python.exe`; in PowerShell with
+a `.venv`, use `.\.venv\Scripts\python.exe`. Both the registered kernel and
+interpreter must point to that environment. The [live-app guide](docs/LIVE_APP.md)
+also explains notebook use without restarting other kernels.
 
-## Final file list
+The other executed static examples are `tunnel_resistivity.demo`, `tunnel_demo`,
+`demo_2p5d`, `receiver_demo` and `grid_demo`, all invoked with `python -m` and the
+`tunnel_resistivity.` prefix. `python -m analysis.run_experiments` reproduces the
+original model's tracked `analysis/results/`; use a separate copy if comparing
+without replacing those artifacts. The legacy UI launches with
+`python -m panel serve legacy_app.py --show`.
 
-The following files are tracked in the index and prepared for the next commit:
+Detailed local logs, rerun notebook copies, comparison JSON, browser screenshots
+and environment metadata are under ignored `outputs/final_review/`. These are
+review artifacts, not required application inputs. The notebooks, guides and
+tracked analysis files contain the scientific evidence needed in the repository.
 
-```text
-.gitignore
-AI_USE.md
-FINAL_REVIEW.md
-README.md
-REFERENCES.md
-SUBMISSION_CHECKLIST.md
-TESTING_REPORT.md
-analysis/README.md
-analysis/__init__.py
-analysis/results/01_depth.pdf
-analysis/results/01_depth.png
-analysis/results/02_radius.pdf
-analysis/results/02_radius.png
-analysis/results/03_contrast_and_profiles.pdf
-analysis/results/03_contrast_and_profiles.png
-analysis/results/04_representative_maps.pdf
-analysis/results/04_representative_maps.png
-analysis/results/05_grid_domain_sensitivity.pdf
-analysis/results/05_grid_domain_sensitivity.png
-analysis/results/provenance.json
-analysis/results/summary.csv
-analysis/results/surface_profiles.csv
-analysis/results/trend_statistics.csv
-analysis/run_experiments.py
-app.py
-requirements-notebook.txt
-requirements.txt
-tests/test_analysis.py
-tests/test_app.py
-tests/test_physics_scenarios.py
-tests/test_plotting.py
-tests/test_simulation.py
-tests/test_solver.py
-tests/test_variable_solver.py
-tunnel_resistivity/__init__.py
-tunnel_resistivity/app.py
-tunnel_resistivity/demo.py
-tunnel_resistivity/diagnostics.py
-tunnel_resistivity/geometry.py
-tunnel_resistivity/plotting.py
-tunnel_resistivity/simulation.py
-tunnel_resistivity/solver.py
-tunnel_resistivity/tunnel_demo.py
-verification.ipynb
+## GitHub and submission readiness
+
+Local branch: **`work`**. HEAD: **`73badd4`**, “Complete 2D electrical resistivity
+forward modeling simulator.” Remote:
+
+<https://github.com/mhbilhartz/Geophysical_Computing_final_project_software_design_mhb>
+
+The index has **44 tracked files** from the original project. The current working
+tree contains modified documentation/entry points and **38 untracked files**,
+including the survey upgrade, its tests, guides, `legacy_app.py`, historical
+presentation material and **`verification_2p5d.ipynb`**. None of these untracked
+files will be included by `git commit -a` alone. No files were staged, committed
+or pushed by this review; the existing index/HEAD were preserved.
+
+Before any future GitHub upload, inspect the full working tree:
+
+```bash
+git status --short --untracked-files=all
+git diff
+git ls-files --others --exclude-standard
 ```
 
-## Git status for student review
+The future commit must include both entry points, the whole `tunnel_resistivity/`
+package, all `tests/`, both executed notebooks, dependency files, current README,
+AI disclosure/references, guides/checklist/review and the original
+`analysis/results/` figures/CSVs. Environments, caches, generated `outputs/`,
+credentials and the instructor's original PDF are excluded. Candidate-file
+inspection found no credential patterns; this does not certify unknown future
+edits.
 
-Local branch: `work`. Local HEAD remains `40830f1` (`outline addition`). The source,
-notebook and results from development are staged, not yet committed or uploaded.
-`A` means staged addition and `M` staged modification. No push was attempted.
+**Remaining actions:** review/stage the complete upgrade and publish it to the
+intended GitHub branch; verify both notebooks' saved outputs, source, figures,
+CSVs and documentation links online; confirm instructor access; then submit the
+repository link on Canvas. Repository visibility and remote contents were not
+changed or rechecked here. Saving/publishing this cloud environment is separate
+from committing and pushing to GitHub.
 
-```text
-A  .gitignore
-A  AI_USE.md
-A  FINAL_REVIEW.md
-M  README.md
-A  REFERENCES.md
-A  SUBMISSION_CHECKLIST.md
-A  TESTING_REPORT.md
-A  analysis/README.md
-A  analysis/__init__.py
-A  analysis/results/01_depth.pdf
-A  analysis/results/01_depth.png
-A  analysis/results/02_radius.pdf
-A  analysis/results/02_radius.png
-A  analysis/results/03_contrast_and_profiles.pdf
-A  analysis/results/03_contrast_and_profiles.png
-A  analysis/results/04_representative_maps.pdf
-A  analysis/results/04_representative_maps.png
-A  analysis/results/05_grid_domain_sensitivity.pdf
-A  analysis/results/05_grid_domain_sensitivity.png
-A  analysis/results/provenance.json
-A  analysis/results/summary.csv
-A  analysis/results/surface_profiles.csv
-A  analysis/results/trend_statistics.csv
-A  analysis/run_experiments.py
-A  app.py
-A  requirements-notebook.txt
-A  requirements.txt
-A  tests/test_analysis.py
-A  tests/test_app.py
-A  tests/test_physics_scenarios.py
-A  tests/test_plotting.py
-A  tests/test_simulation.py
-A  tests/test_solver.py
-A  tests/test_variable_solver.py
-A  tunnel_resistivity/__init__.py
-A  tunnel_resistivity/app.py
-A  tunnel_resistivity/demo.py
-A  tunnel_resistivity/diagnostics.py
-A  tunnel_resistivity/geometry.py
-A  tunnel_resistivity/plotting.py
-A  tunnel_resistivity/simulation.py
-A  tunnel_resistivity/solver.py
-A  tunnel_resistivity/tunnel_demo.py
-A  verification.ipynb
-```
-
-The GitHub submission is **pending**, not a passed publication check: review this
-list/status, commit and push the complete project when authorized, verify the
-instructor can access it and see the notebook outputs, then submit the repository
-link on Canvas by November 29, 2026, 11:59 p.m. Mountain Time. Presentation and
-attendance obligations are listed in [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md).
+The course document lists the repository deadline as **November 29, 2026,
+11:59 p.m. Mountain Time**, and Molly's final presentation as **November 30,
+10:24–10:34 a.m. Mountain Time**. Confirm any instructor schedule updates. The
+historical idea-discussion deck predates the electrode upgrade; prepare the
+final demonstration using the current app and `verification_2p5d.ipynb`.

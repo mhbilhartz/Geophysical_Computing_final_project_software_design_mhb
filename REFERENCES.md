@@ -24,6 +24,16 @@
 - NumPy: [array documentation](https://numpy.org/doc/stable/).
 - SciPy: [sparse matrix documentation](https://docs.scipy.org/doc/scipy/reference/sparse.html)
   and [`spsolve`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.spsolve.html).
+- SciPy modified Bessel functions:
+  [`k0`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.k0.html)
+  and [`k1`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.k1.html),
+  used for Fourier-transformed point-source fields and derivatives.
+- The half-space field, manufactured Fourier forcing and two-layer image series
+  in [verification_2p5d.ipynb](verification_2p5d.ipynb) are derived/explained in
+  the notebook. Image potentials are harmonic away from their images; the
+  reflection/transmission coefficient is checked against potential/current
+  continuity, and series truncation is tested. These analytical evaluators
+  are independent verification references, not external PDE implementations.
 - Matplotlib: [plotting documentation](https://matplotlib.org/stable/).
 - Panel: [application documentation](https://panel.holoviz.org/).
 - Jupyter: [JupyterLab](https://jupyterlab.readthedocs.io/en/stable/) and

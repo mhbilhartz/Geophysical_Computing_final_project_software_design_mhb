@@ -1,5 +1,11 @@
 # Step 5 — Geophysical analysis and interpretation
 
+**Model scope:** these experiments use the retained fixed-voltage 2D solver
+and `legacy_app.py`, not the default point-electrode survey model. Their voltage
+anomalies are not apparent resistivity. For the current survey pipeline see
+[the verification guide](../docs/VERIFICATION_2P5D.md),
+[survey examples](../docs/SURVEYS.md) and [current review](../FINAL_REVIEW.md).
+
 ## Question and reproducibility
 
 How do tunnel depth, size, and electrical contrast change the predicted potential
@@ -20,7 +26,7 @@ The script calls the existing `circular_tunnel`, `solve_conductivity`, and
 `solve_homogeneous` functions. It adds no PDE solver or UI features. Repeated
 models/references are reused within each run, without a persistent cache that
 could become stale. The completed run produced **53 experiment records from
-45 distinct tunnel solves and 7 homogeneous solves**. All **42 tests passed**,
+45 distinct tunnel solves and 7 homogeneous solves**. At that original analysis milestone, **42 tests passed**,
 including the previous 39 and three new analysis checks. No solver errors were
 found or method changes needed. The production modules and executed
 `verification.ipynb` are unchanged, checked by pre/post hashes.

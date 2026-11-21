@@ -1,93 +1,85 @@
 # Assignment requirement checklist
 
-Reviewed against the user-supplied *GPGN 436/536 — Final Project Instructions
-and Grading Policy*, Fall 2026, on November 3, 2026. This checks the technical
-submission and identifies obligations that software tests cannot establish.
-**PASS** means evidence was inspected/executed; **PENDING** means a student,
-instructor or publication action remains. A passing artifact is not a grade.
+Project artifacts rechecked November 21, 2026. Course requirements, rubric and
+schedule below were transcribed from the user-supplied *GPGN 436/536 — Final
+Project Instructions and Grading Policy*, Fall 2026, during the November 3 review.
+This review does not establish attendance, instructor approval or a grade.
+**PASS** means local technical evidence; **PENDING** identifies a remaining
+student, instructor or GitHub action. See [the current review](FINAL_REVIEW.md)
+for checks actually executed and platform limits.
 
-## Sections 1–3: software, distinctness, AI and organization
+## Software, method and organization
 
 | Requirement | Status | Evidence / remaining action |
 | --- | --- | --- |
-| Meaningful, clearly defined geophysical problem | PASS | Onyx-motivated tunnel depth/size/contrast question in README and analysis report |
-| Numerical method for elliptic/parabolic/hyperbolic PDE | PASS | Elliptic conductivity PDE, visible conservative finite-difference implementation in `solver.py`; student must explain its connection to course methods |
-| Python implementation | PASS | Production source, tests and analysis |
-| UI changes parameters, runs and shows results | PASS | Panel controls; callback tests and clean-install live browser check documented in FINAL_REVIEW |
-| Clearly labeled outputs and physical units | PASS | Tested plot fields/axes/color bars; published analysis figures and CSV column units |
-| Focused 1D/2D model is sufficient | PASS | 2D isotropic DC model; complexity is not presented as a grading advantage |
-| Substantially distinct from classmates | PENDING | Only instructor/class discussion can establish distinctness and proposal priority |
-| Separate simulation and UI modules | PASS | `solver.py`, `geometry.py`, `simulation.py` versus `app.py`; no UI import needed to solve |
-| Simulation contains numerical method, parameters and boundaries | PASS | Explicit face assembly, coefficient array and fixed-voltage/insulating conditions; steady elliptic problem has no initial condition |
-| Simulation independently importable | PASS | Notebook, analysis and tests import production solver directly |
-| Visible course method, not a wrapper around a specialized simulator | PASS | NumPy/SciPy assembly and sparse solve; no geophysical package |
-| Use and disclose AI assistance | PASS | AI_USE.md identifies OpenAI Codex and contributions |
-| Acknowledge external code/references | PASS | REFERENCES.md; no copied external numerical implementation, illustrative materials identified |
-| Student understands and checks AI-generated work | PENDING | Tests provide checking evidence, but independent student understanding must be demonstrated |
+| Meaningful geophysical problem | PASS | Onyx-motivated tunnel effects on surface DC measurements; hypothetical properties, no measured mine data |
+| Visible Python numerical PDE method | PASS | Conservative finite differences and harmonic interface conductivities in `solver.py` and `solver_2p5d.py`; SciPy sparse solves, no geophysical simulation package |
+| Clear model and boundaries | PASS | Default 2.5D point sources: insulating surface away from electrodes, analytical-primary total potential on finite outer walls; retained original 2D model: 1/0 V sides, insulated top/bottom |
+| Separate simulation and UI | PASS | Importable source, receiver, survey and grid modules; Panel in `survey_app.py`, plotting in `survey_plotting.py` |
+| Adjustable inputs and labeled results | PASS | Tunnel depth/radius/position, material/custom resistivity, array/spacing/current and grids; automatic updates, fields/profiles/data and diagnostics |
+| Simulation independently importable | PASS | Both verification notebooks and tests call production numerical modules without the UI |
+| Appropriate scope | PASS | Steady 2.5D forward model with flat surface and infinite tunnel axis; no inversion, finite 3D tunnel or instrument-detection claim |
+| Substantially distinct from classmates | PENDING | Instructor/class discussion establishes distinctness and proposal approval |
+| AI assistance and references disclosed | PASS | `AI_USE.md` and `REFERENCES.md` describe contributions, methods and student responsibility |
+| Independent student understanding | PENDING | Explain sources, boundaries, Fourier reduction, harmonic fluxes, receiver polarity, errors and limitations without AI |
 
-## Section 4: numerical verification
+## Numerical verification
 
 | Requirement | Status | Evidence |
 | --- | --- | --- |
-| Separate Jupyter notebook | PASS | `verification.ipynb`, tracked with saved outputs |
-| Same simulation code, independent of UI | PASS | Direct import of `solve_conductivity`, source-path/hash check, no alternate solver |
-| Test problem and analytical solution | PASS | Smooth linear conductivity; logarithmic potential derived by substitution |
-| Matching parameters and boundary conditions | PASS | Fixed dimensions, coefficients and side voltages; insulated horizontal faces |
-| Applicable initial conditions | PASS / not applicable | No time evolution or initial state in a steady elliptic boundary-value problem |
-| Run numerical simulation | PASS | Ten code cells executed, plus independent fresh-environment execution |
-| Analytical/numerical plots | PASS | Maps, horizontal profiles, errors and current comparisons |
-| Quantitative error measure | PASS | Maximum error, RMSE and voltage-span-normalized RMSE |
-| Grid/time-step dependence | PASS | Four grids, measured error orders; no time step applies |
-| Agreement, discrepancies and limitations | PASS | Measured near-second-order smooth-case convergence; coefficient, boundary and tunnel-geometry limitations explained |
-| Simplified verification may support a more complex application | PASS | Same variable-conductivity solver, while explicitly limiting claims about circular interfaces |
-| Executed outputs visible on GitHub | PASS locally / PENDING online | Four figures and tables retained; complete notebook still needs commit/push and online visibility check |
+| Separate executed notebook for current app | PASS locally | `verification_2p5d.ipynb`: production 2.5D source/operator/receiver imports, ten executed code cells, five embedded figures, 26 acceptance checks |
+| Analytical solution/reference | PASS | Homogeneous half-space fields, transform identity, manufactured constant/smooth-conductivity modes and independent two-layer image series |
+| Same numerical method as application | PASS | Manufactured tests import the production spatial assembly; nonzero layered tests call the actual source solver and receiver reconstruction |
+| Matching parameters/conditions explained | PASS | Manufactured boundary/forcing matches exactly; layered half-space versus finite numerical-wall mismatch is identified and studied |
+| Quantitative error and refinement | PASS | Field/receiver/apparent-resistivity errors, mesh refinement, Fourier integration and domain sensitivity; near-second-order smooth spatial-mode convergence |
+| Distinguish verification from a demo | PASS artifacts / PENDING delivery | Mathematical references, error tables and discussion are separate from the interactive survey |
+| Applicable initial/time conditions | PASS / not applicable | Steady elliptic model has no time step or initial condition |
+| Original numerical verification retained | PASS locally | `verification.ipynb`: ten executed code cells, four figures, smooth logarithmic solution and grid refinement for retained `legacy_app.py` |
+| Error limits stated | PASS | Exact homogeneous primary is insufficient alone; nonzero layered check included; stair-stepped circles, finite walls, Fourier cutoffs, interpolation and cancellation remain limitations |
+| Saved notebook results visible online | PENDING | Both notebooks contain local saved outputs; latest complete files must be committed/pushed and inspected on GitHub |
 
-## Section 6: repository and submission
+## Repository and submission
 
 | Requirement | Status | Evidence / remaining action |
 | --- | --- | --- |
-| All simulation and UI source | PASS | Full package and root launch file tracked/staged |
-| Executed verification notebook | PASS | Outputs preserved; source notebook unchanged during final reproduction |
-| Data needed to run software/verification | PASS | No external data needed; all inputs are generated from stated parameters |
-| Dependency file | PASS | Runtime and optional notebook requirements; genuinely isolated fresh install tested |
-| README: problem, PDE, method, install, launch and usage | PASS | Final README includes Linux/macOS and PowerShell instructions; only Linux tested |
-| Working example and expected results | PASS | Static examples and default UI table; homogeneous exact values stated |
-| AI-use statement and references | PASS | AI_USE.md and REFERENCES.md |
-| Important figures and data included | PASS | Five PNG/PDF pairs, three CSV tables and provenance in tracked `analysis/results/` |
-| Runnable from a fresh download | PASS on tested platform | Separate project copy and clean Python 3.12 environment; FINAL_REVIEW evidence |
-| Repository accessible to instructor | PENDING | Student must verify access after upload; the agent's local tests do not prove instructor access |
-| Complete project uploaded by deadline | PENDING | **November 29, 2026, 11:59 p.m. Mountain Time**; no push authorized during this review |
-| Submit only repository link on Canvas | PENDING | Student action after verifying the uploaded repository |
-| README and notebook provide written documentation | PASS | Both supplied; analysis report is additional scientific interpretation, not a required separate submission |
+| All source, tests and launch files available | PASS locally / PENDING Git | Working tree contains original and survey applications. Survey additions remain untracked until deliberately added to a future commit |
+| Data needed to run | PASS | No external dataset; all inputs generated from stated parameters |
+| Dependency files | PASS | Pinned direct runtime and optional notebook requirements; clean Python environment review in `FINAL_REVIEW.md` |
+| README covers problem, PDE, method, installation and use | PASS | Current default app and retained legacy app are distinguished; browser and Jupyter launch instructions supplied |
+| Working examples and expected results | PASS | Static solver, receiver, survey, grid and visualization commands; numerical references in guides |
+| Important figures and CSVs | PASS locally | Original analysis artifacts in tracked `analysis/results/`; 2.5D verification results also saved inline in its notebook. Ignored `outputs/` artifacts are regenerable |
+| Reproducible fresh download | PASS on tested platform | Complete working-tree copy and isolated Linux/Python 3.12 environment, including currently untracked source. A checkout of current HEAD alone omits the upgrade |
+| GitHub instructor access | PENDING | Verify current remote branch, complete contents and instructor access after a future upload; local/cloud publication does not prove GitHub accessibility |
+| Complete project uploaded by deadline | PENDING | **November 29, 2026, 11:59 p.m. Mountain Time** per the course document |
+| Submit repository link on Canvas | PENDING | Student action after verifying GitHub contents; this review does not submit anything |
+| Written documentation | PASS | README, separate notebooks, numerical/user guides and analysis interpretation |
 
-## Sections 5 and 7: discussion, attendance and presentation
+## Discussion, attendance and final presentation
 
-| Requirement | Status | Student preparation / action |
+| Requirement | Status | Student action |
 | --- | --- | --- |
-| Present a general project idea on assigned discussion date | PENDING | Molly's PDF slot: **November 9, 2026, 10:24–10:36 a.m. Mountain Time**, lecture classroom |
-| Discussion: ~5-minute idea presentation + ~7-minute discussion | PENDING | Explain problem/motivation, PDE/method, functionality, verification approach and questions/challenges |
-| Attend discussion sessions and sign attendance sheets | PENDING | Attendance is a student obligation; project artifacts cannot establish it |
-| Seek arrangements for approved assigned-date absence | PENDING if needed | Contact instructor if applicable; no contact is made by this project review |
-| Final presentation is 10 minutes | PENDING | Molly's PDF slot: **November 30, 2026, 10:24–10:34 a.m. Mountain Time**, lecture classroom |
-| 4 minutes software design/demo | PENDING | Introduce geophysical purpose, demonstrate controls and interpret actual results |
-| 4 minutes simulation code + verification walkthrough | PENDING | Explain PDE, face averaging, boundary distances, sparse solve and notebook error/refinement plots |
-| 2 minutes independent instructor questions | PENDING | Answer without AI; navigate source/notebook on GitHub; no live coding required |
-| Before presentation: running UI, GitHub solver, executed GitHub notebook open | PENDING | Complete local setup and online checks before the slot begins |
-| Explain physics, discretization, solver, conditions and limitations | PENDING | README and notebook support preparation; understanding is demonstrated by the student |
-| UI implementation explanation not required | PASS / scope note | Focus code walkthrough on the geophysical simulation |
-| Attend all final-presentation sessions and sign sheets | PENDING | November 30; December 2, 3 and 7; December 9 if presentations are subsequently scheduled there |
-| Interpret verification separately from a software demo | PASS artifacts / PENDING delivery | Executed notebook is separate, with mathematical derivation and measured errors |
+| Assigned idea discussion | PENDING verification | PDF slot: **November 9, 2026, 10:24–10:36 a.m. Mountain Time**; date has passed, attendance/outcome not established here |
+| Discussion format | PENDING verification | Approximately five-minute idea presentation and seven-minute discussion; files under `presentations/` are historical original-model material |
+| Discussion attendance/sign-in and any absence arrangement | PENDING verification | Student/instructor records establish these obligations |
+| Final presentation, ten minutes | PENDING | PDF slot: **November 30, 2026, 10:24–10:34 a.m. Mountain Time**, lecture classroom |
+| Four-minute design/demo | PENDING | Demonstrate current arrays, sliders, automatic updates and correctly interpret fields/apparent resistivity |
+| Four-minute code/verification walkthrough | PENDING | Use current `solver_2p5d.py` and `verification_2p5d.ipynb`; distinguish the original fixed-voltage notebook if shown |
+| Two-minute independent questions | PENDING | Answer without AI; navigate source/notebook; no live coding required |
+| UI, GitHub solver and executed GitHub notebook open beforehand | PENDING | Prepare the running app and verify online outputs before the slot |
+| Explain physics/numerical conditions/limits | PENDING | Include why point electrodes require the 2.5D source formulation, signs of K and voltage, and spacing level versus depth |
+| UI-code explanation | PASS / scope note | Focus numerical walkthrough on the simulation; UI implementation explanation is not required |
+| Final-session attendance/sign-in | PENDING | November 30; December 2, 3 and 7; December 9 if scheduled, per original course document |
 
-## Section 8: grading and readiness
+## Grading and readiness
 
-The rubric allocates **30 points to participation** and **70 to presentation**:
-30 software design/demo, 15 numerical-code explanation, 15 analytical verification,
-and 10 independent answers. Repository completeness and successful tests provide
-evidence, not guaranteed points. The instructor assesses distinctness, scientific
-reasoning, attendance, presentation and independent understanding.
+The original rubric allocates **30 participation points** and **70 presentation
+points**: 30 software design/demo, 15 numerical-code explanation, 15 analytical
+verification and 10 independent answers. Tests and artifacts are evidence, not
+guaranteed points. Schedule changes, approval, attendance, independent understanding
+and grading remain with the student/instructor.
 
-No required technical artifact is currently known to be missing. The project is
-ready for student review of the final files and Git status. **Publication, access
-verification, Canvas submission, attendance and presentation remain pending.**
-See [FINAL_REVIEW.md](FINAL_REVIEW.md) for executed reproduction results and the
-final file/Git-status snapshot. Nothing is pushed by this review.
+The current technical review is [FINAL_REVIEW.md](FINAL_REVIEW.md). Its results
+support local technical readiness; Git staging/upload, online content/access
+checks, Canvas submission and presentation remain separate actions. The old
+idea-discussion slide deck is retained as historical material and should not be
+used as the final 2.5D presentation without updating its physics and screenshots.
