@@ -22,7 +22,28 @@ No Onyx field data or instrument-detection threshold is used.
 - [Submission checklist](SUBMISSION_CHECKLIST.md) and [final reproducibility review](FINAL_REVIEW.md)
 - [AI-use disclosure](AI_USE.md) and [references](REFERENCES.md)
 
-## Install and launch
+## Browser website — updated course requirement
+
+The browser version uses **Pyodide in a Web Worker**, with **GitHub Actions →
+GitHub Pages** deployment and **no simulation backend server**. It reuses the
+existing Python solver. The desktop Panel application and both executed
+verification notebooks remain available.
+
+Target runnable URL:
+<https://mhbilhartz.github.io/Geophysical_Computing_final_project_software_design_mhb/>
+
+Deployment requires Pages to use **GitHub Actions** and the workflow to finish
+successfully. See [browser deployment and phone instructions](docs/BROWSER_DEPLOYMENT.md)
+for the one-time repository setting, current-runtime requirements, controls and
+local reproduction. The updated submission asks for this runnable website URL;
+the repository URL supplies code and verification evidence.
+
+First use downloads about 45 MB of Python/scientific packages. Controls update
+automatically, and the four maps stack on a phone. The browser has smaller
+workload limits than the desktop app. The Pyodide build uses compatible
+WebAssembly library versions; it does not install the desktop wheels below.
+
+## Desktop installation and Panel launch
 
 **Survey-upgrade status:** Steps 1–6 are connected by the
 [Step 7 live interface](docs/LIVE_APP.md). Tunnel radius/depth sliders, material
@@ -353,7 +374,7 @@ Windows PowerShell:
 .\.venv\Scripts\python.exe -m tunnel_resistivity.visualization_demo
 ```
 
-There are **167 tests**, covering analytical/physical solver checks, harmonic
+There are **174 tests**, covering analytical/physical solver checks, harmonic
 interfaces, geometry, current conservation, UI callbacks, plot data/axes,
 analysis measures, electrode geometry, the 2.5D solver, receiver measurements,
 signed apparent resistivity, survey geometry/forward calls/source reuse,
@@ -367,7 +388,7 @@ see [the Step 2 numerical notes](docs/SOURCE_PAIR_2P5D.md) and
 checks are recorded in [TESTING_REPORT.md](TESTING_REPORT.md); the final clean
 review is in [FINAL_REVIEW.md](FINAL_REVIEW.md). Historical milestone test counts
 in the numerical guides describe their respective stages; the current suite has
-167 tests.
+174 tests including the browser adapter.
 
 Static examples write regenerable files under ignored `outputs/`. The homogeneous
 example should have linear V, Jx=1e-4 A/m², Jz≈0 and total current 0.005 A/m.
@@ -547,9 +568,10 @@ tunnel_resistivity/
   fields.py                    Selected-source solves and bounded field cache
   survey_plotting.py           Model/profile, field, surface and survey maps
   visualization_demo.py        Reproducible 2.5D field/map PNG/PDF and arrays
+  browser.py                   Worker adapter calling the existing solver
   plotting.py, diagnostics.py  Shared plots and face-current diagnostics
   demo.py, tunnel_demo.py      Static working examples
-tests/                         167 automated tests
+tests/                         174 automated tests
 verification.ipynb             Executed analytical verification (saved outputs)
 verification_2p5d.ipynb        Executed 2.5D backend verification (survey Step 4)
 analysis/run_experiments.py     Reproducible controlled experiments
@@ -557,7 +579,10 @@ analysis/README.md             Scientific interpretation
 analysis/results/              Tracked CSV, PNG, PDF and provenance files
 docs/                          Numerical/user guides and historical review
 presentations/                 Historical original-model idea discussion
-requirements*.txt              Runtime and optional notebook dependencies
+web/                           Static responsive browser UI and Web Worker
+scripts/                       Static build and real browser tests
+.github/workflows/pages.yml    GitHub Actions testing and Pages deployment
+requirements*.txt              Runtime, notebook and browser-test dependencies
 AI_USE.md, REFERENCES.md        Assistance disclosure and references
 SUBMISSION_CHECKLIST.md         PDF requirements and remaining student actions
 FINAL_REVIEW.md                 Fresh-install evidence, file list and Git status

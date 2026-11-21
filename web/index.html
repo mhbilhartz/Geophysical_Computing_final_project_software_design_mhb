@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore underground tunnel resistivity with a 2.5D electrical survey simulator. Python runs in your browser in a Pyodide Web Worker.">
+  <title>Underground Tunnel · Electrical Resistivity Simulator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23163f46'/%3E%3Ccircle cx='16' cy='18' r='8' fill='%23d7f2e9'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <div class="eyebrow">GPGN 436 · Molly Bilhartz · Geophysical Computing</div>
+    <h1>Underground Tunnel<br><span>Electrical Resistivity Simulator</span></h1>
+    <p>Explore how a buried tunnel changes surface electrical measurements. Choose an electrode array, change the model, and compare the response.</p>
+    <div class="links"><span class="badge">Runs in your browser · no installation</span><a href="#results">View results ↓</a><a href="https://github.com/mhbilhartz/Geophysical_Computing_final_project_software_design_mhb">Source &amp; verification notebooks ↗</a></div>
+  </header>
+  <section class="page_status" aria-label="Runtime and calculation status">
+    <div id="status" role="status" aria-live="polite">Starting the browser’s Python runtime…</div>
+    <p id="runtime_note" class="hint">The first visit downloads about 45 MB of Python and scientific packages. Computation stays on this device; no simulation backend is contacted.</p>
+    <button id="reload" class="secondary" type="button" hidden>Reload Python</button>
+    <p id="plan" class="plan">Changes run after a short pause. A full survey can take tens of seconds or longer, especially on a phone.</p>
+  </section>
+  <main>
+    <aside aria-label="Simulation controls">
+      <form id="controls">
+        <details open>
+          <summary>Tunnel &amp; background rock</summary>
+          <label for="material">Tunnel material</label>
+          <select id="material"><option>Air-filled</option><option>Water-filled</option><option>Custom</option></select>
+          <label for="tunnel_resistivity">Tunnel resistivity (Ω·m)</label>
+          <input id="tunnel_resistivity" type="number" min="0.1" max="100000000" step="any" value="100000000" disabled>
+          <label for="host_resistivity">Background rock resistivity (Ω·m)</label>
+          <input id="host_resistivity" type="number" min="1" max="100000" step="any" value="100">
+          <label for="radius_m">Tunnel radius <output id="radius_m_value">5 m</output></label>
+          <input id="radius_m" type="range" min="2" max="10" step="0.5" value="5">
+          <label for="depth_m">Center depth <output id="depth_m_value">15 m</output></label>
+          <input id="depth_m" type="range" min="5.5" max="60" step="0.5" value="15">
+          <label for="center_x_m">Horizontal position <output id="center_x_m_value">50 m</output></label>
+          <input id="center_x_m" type="range" min="-50" max="150" step="0.5" value="50">
+          <p class="hint">Depth is to the center. Air: 10⁸ Ω·m; water: 5 Ω·m. These illustrative materials always have positive, finite conductivity.</p>
+        </details>
+        <details open>
+          <summary>Electrode survey</summary>
+          <label for="array_type">Array type</label>
+          <select id="array_type"><option value="wenner">Wenner</option><option value="schlumberger">Schlumberger</option><option value="dipole-dipole">Dipole–dipole</option></select>
+          <label for="electrode_count">Physical electrode count <output id="electrode_count_value">7</output></label>
+          <input id="electrode_count" type="range" min="4" max="13" step="1" value="7">
+          <label for="electrode_spacing_m">Line spacing p <output id="electrode_spacing_m_value">5 m</output></label>
+          <input id="electrode_spacing_m" type="range" min="1" max="10" step="0.5" value="5">
+          <label for="line_start_x_m">First electrode x (m)</label>
+          <input id="line_start_x_m" type="number" min="-100" max="100" step="any" value="30">
+          <label for="max_level">Maximum spacing level <output id="max_level_value">2</output></label>
+          <input id="max_level" type="range" min="1" max="2" step="1" value="2">
+          <div id="receiver_control" hidden><label for="receiver_spacing_steps">Schlumberger MN / p <output id="receiver_spacing_steps_value">1</output></label><input id="receiver_spacing_steps" type="range" min="1" max="4" step="1" value="1"></div>
+          <div id="dipole_control" hidden><label for="dipole_spacing_steps">Dipole length / p <output id="dipole_spacing_steps_value">1</output></label><input id="dipole_spacing_steps" type="range" min="1" max="3" step="1" value="1"></div>
+          <label for="current_a">Injected current (A)</label>
+          <input id="current_a" type="number" min="0.0001" max="10" step="any" value="0.1">
+          <p class="hint">A injects +I; B withdraws I. Receiver voltage is V<sub>M</sub> − V<sub>N</sub>. All valid translations through the chosen level are computed.</p>
+        </details>
+        <details>
+          <summary>Grid &amp; domain</summary>
+          <label for="grid_mode">Domain sizing</label>
+          <select id="grid_mode"><option>Automatic</option><option>Manual</option></select>
+          <div id="automatic_grid">
+            <label for="max_cell_size_m">Maximum cell size</label>
+            <select id="max_cell_size_m"><option value="1.25">Coarse: ≤1.25 m</option><option value="1">Medium: ≤1 m</option><option value="0.8">Fine: ≤0.8 m</option></select>
+            <label for="padding_factor">Boundary padding / maximum spread <output id="padding_factor_value">2</output></label>
+            <input id="padding_factor" type="range" min="1" max="3" step="0.5" value="2">
+          </div>
+          <div id="manual_grid" hidden>
+            <label for="x_min_m">Left grid face x (m)</label><input id="x_min_m" type="number" step="any" value="-30">
+            <label for="x_max_m">Right grid face x (m)</label><input id="x_max_m" type="number" step="any" value="130">
+            <label for="height_m">Bottom depth (m)</label><input id="height_m" type="number" min="1" step="any" value="80">
+            <label for="nx">Horizontal cells nx</label><input id="nx" type="number" min="2" max="1000" step="1" value="128">
+            <label for="nz">Depth cells nz</label><input id="nz" type="number" min="2" max="1000" step="1" value="64">
+          </div>
+          <p class="hint">The same production grid rules apply. Browser limits: 32,768 cells, 12 source solves and 48 measurements. Oversized models are rejected, never silently coarsened.</p>
+        </details>
+        <div class="actions">
+          <label class="toggle"><input id="automatic" type="checkbox" checked> Update automatically</label>
+          <button id="update" type="submit">Update simulation</button>
+          <button id="reset" type="button" class="secondary">Reset to defaults</button>
+          <button id="stop" type="button" class="secondary" disabled>Stop calculation</button>
+        </div>
+      </form>
+    </aside>
+    <section id="results" class="results" aria-label="Simulation results">
+      <div class="result_toolbar">
+        <label for="snapshot">Completed scenario</label>
+        <select id="snapshot" disabled><option>No completed scenarios yet</option></select>
+        <button id="csv" type="button" class="secondary" disabled>Download survey CSV</button>
+      </div>
+      <div id="result_content" hidden>
+        <h2 id="scenario_title">Completed simulation</h2>
+        <p id="scenario_info"></p>
+        <div id="diagnostics" class="diagnostics"></div>
+        <div id="warnings" class="notice" hidden></div>
+        <h3>Apparent resistivity along the survey</h3>
+        <p class="hint">Each line is an array spacing level. The dashed line is the homogeneous host reference.</p>
+        <a id="profile_link" target="_blank" rel="noopener"><img id="profile" alt="Apparent resistivity versus full electrode-spread midpoint" loading="lazy"></a>
+        <h3>Inspect a measurement</h3>
+        <label for="measurement">Source and receiver coordinates</label>
+        <select id="measurement" disabled></select>
+        <p id="field_info" class="field_info"></p>
+        <button id="png" type="button" class="secondary" disabled>Download selected field PNG</button>
+        <div id="field_content" hidden>
+          <h3>Potential &amp; current fields</h3>
+          <p class="hint">Depth increases downward. Cyan arrows show direction only; colors show current magnitude. Potential uses symmetric-log colors; the anomaly scale is linear and centered on zero. Tap a figure to enlarge it.</p>
+          <div class="plot_grid" id="field_plots"></div>
+          <details open><summary>Surface potential difference</summary><p class="hint">Tunnel minus homogeneous surface potential for this source pair; M/N markers use the same reconstruction as the measured voltage.</p><a id="surface_link" target="_blank" rel="noopener"><img id="surface" alt="Surface potential difference with receiver markers" loading="lazy"></a></details>
+          <details><summary>Survey configuration map</summary><p class="hint">Squares are measured configurations. The vertical axis is spacing level, not depth. There is no inversion or interpolation between measurements.</p><a id="map_link" target="_blank" rel="noopener"><img id="map" alt="Apparent resistivity and relative anomaly by spread midpoint and spacing level" loading="lazy"></a></details>
+        </div>
+        <details><summary>Measurement table</summary><div class="table_scroll"><table id="measurements"><thead><tr><th>ID</th><th>Level</th><th>A (m)</th><th>B (m)</th><th>M (m)</th><th>N (m)</th><th>V<sub>M</sub>−V<sub>N</sub> (V)</th><th>K (m)</th><th>ρa (Ω·m)</th></tr></thead><tbody></tbody></table></div></details>
+      </div>
+      <details class="science"><summary>How to interpret this model</summary><p>This is a 2.5D DC forward model: conductivity is invariant along an infinitely long tunnel, while point-source current spreads in three dimensions. The finite-difference solver uses harmonic conductivity across cell faces.</p><p>The surface is insulating away from the electrodes. Finite side/bottom walls use the analytical homogeneous primary potential. The tunnel anomaly uses the corresponding secondary field. Grid, boundary and Fourier sensitivity still matter; a small residual does not certify continuum accuracy.</p><p>The Onyx mine in Steamboat Springs motivates this teaching project. No measured mine data, instrument noise, contact resistance, topography or inversion is included. Apparent resistivity is not a reconstructed depth image. Water and air presets are illustrative.</p></details>
+    </section>
+  </main>
+  <dialog id="figure_dialog" aria-label="Enlarged simulation figure">
+    <div class="figure_toolbar"><strong id="figure_caption">Simulation figure</strong><button id="figure_zoom" class="secondary" type="button">Actual size</button><button id="figure_close" type="button">Close</button></div>
+    <div class="figure_scroll"><img id="figure_detail" alt="Enlarged simulation figure"></div>
+  </dialog>
+  <footer>Python runs in a Pyodide Web Worker. Hosted as static files on GitHub Pages. <a href="https://github.com/mhbilhartz/Geophysical_Computing_final_project_software_design_mhb/blob/main/AI_USE.md">AI-use disclosure</a> · <a href="https://github.com/mhbilhartz/Geophysical_Computing_final_project_software_design_mhb/blob/main/verification_2p5d.ipynb">Analytical verification</a><noscript><p>Enable JavaScript to run the simulator.</p></noscript></footer>
+</body>
+</html>

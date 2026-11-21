@@ -57,6 +57,13 @@ Codex assisted with:
   model results and presentation material were distinguished from the current
   2.5D survey application; no new solver or modeling features were added.
 
+- The updated [browser-only deployment](docs/BROWSER_DEPLOYMENT.md): Pyodide
+  Web Worker integration, browser controls and mobile layout, static-runtime
+  packaging, GitHub Actions/Pages workflow, browser-adapter tests and actual
+  WebAssembly numerical/interaction checks. Existing solvers and saved
+  verification notebooks were preserved. The deployment architecture follows
+  the instructor's subsequently supplied directions.
+
 No external numerical implementation or specialized geophysical simulator was
 incorporated. Standard libraries perform array operations, sparse linear algebra
 and plotting. [REFERENCES.md](REFERENCES.md) acknowledges the course document,

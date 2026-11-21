@@ -10,6 +10,16 @@ for checks actually executed and platform limits. Publication statuses were
 updated after the November 21 upload of code commit `b7e4118` to public GitHub
 `main`; the report records the independent-download and web-page checks.
 
+## Updated browser-deployment requirement
+
+The instructor's subsequently supplied directions require **Pyodide in a Web
+Worker**, **GitHub Actions deployment to GitHub Pages**, **no backend server**,
+and a **URL that directly runs the software in a browser**. This replaces the
+original repository-link-only submission instruction. The browser source and
+workflow are documented in [BROWSER_DEPLOYMENT.md](docs/BROWSER_DEPLOYMENT.md).
+The deployment is complete only after its workflow succeeds and the public
+Pages URL produces results; repository publication alone is insufficient.
+
 ## Software, method and organization
 
 | Requirement | Status | Evidence / remaining action |
@@ -53,7 +63,7 @@ updated after the November 21 upload of code commit `b7e4118` to public GitHub
 | Reproducible fresh download | PASS on tested platform | Isolated Linux/Python 3.12 reproduction passed; independently cloned GitHub code commit matches the reviewed project byte-for-byte |
 | GitHub availability / instructor access | PASS public availability / PENDING instructor confirmation | Public repository and required file pages returned HTTP 200. Student should check the link from the browser/account used for class |
 | Complete project uploaded by deadline | PASS upload | Pushed November 21, before **November 29, 2026, 11:59 p.m. Mountain Time**; main contains the complete reviewed project |
-| Submit repository link on Canvas | PENDING | Student action after verifying GitHub contents; this review does not submit anything |
+| Submit direct runnable website URL on Canvas | PENDING | Updated instructor requirement: submit the verified GitHub Pages simulation URL; retain the repository link for source/notebooks. No Canvas action is performed by the agent |
 | Written documentation | PASS | README, separate notebooks, numerical/user guides and analysis interpretation |
 
 ## Discussion, attendance and final presentation
@@ -82,7 +92,7 @@ and grading remain with the student/instructor.
 
 The current technical and publication review is [FINAL_REVIEW.md](FINAL_REVIEW.md).
 The complete upgrade is on public GitHub `main`. Remaining actions are the visual
-notebook-preview check, instructor-specific access confirmation, Canvas link
+notebook-preview check, instructor-specific access confirmation, Canvas website-URL
 submission and presentation. The old idea-discussion slide deck is retained as
 historical material and should not be used as the final 2.5D presentation without
 updating its physics and screenshots.

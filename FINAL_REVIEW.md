@@ -46,6 +46,17 @@ Canvas submission, instructor-specific access confirmation and the final
 presentation remain student actions in the [checklist](SUBMISSION_CHECKLIST.md).
 No Canvas action or cloud-environment publication was performed by this Git step.
 
+## Subsequent browser-deployment requirement
+
+The instructor subsequently required Pyodide in a Web Worker, GitHub Actions,
+GitHub Pages and a direct runnable browser URL with no backend server. The
+[deployment guide](docs/BROWSER_DEPLOYMENT.md) records the new architecture,
+current validation and one-time Pages setting. This extends the project after
+its 2.5D desktop review; the original numerical code and saved notebooks remain
+unchanged. The new native suite has **174 tests**, and the actual WebAssembly
+runtime was tested separately. Publishing the repository alone does not meet
+the updated website-submission requirement.
+
 ## Checks actually executed
 
 A complete copy of the working tree, including currently untracked survey files,

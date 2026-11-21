@@ -36,6 +36,14 @@
   are independent verification references, not external PDE implementations.
 - Matplotlib: [plotting documentation](https://matplotlib.org/stable/).
 - Panel: [application documentation](https://panel.holoviz.org/).
+- Pyodide: [Web Workers](https://pyodide.org/en/stable/usage/webworker.html)
+  and [package loading](https://pyodide.org/en/stable/usage/loading-packages.html).
+  The static site pins the 0.27.7 distribution and its WebAssembly scientific
+  wheels; the runtime and distribution licenses accompany the built artifact.
+- GitHub: [deploying Pages with Actions](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages),
+  [configure-pages](https://github.com/actions/configure-pages) and
+  [deploy-pages](https://github.com/actions/deploy-pages).
+
 - Jupyter: [JupyterLab](https://jupyterlab.readthedocs.io/en/stable/) and
   [nbconvert execution](https://nbconvert.readthedocs.io/en/latest/execute.html).
 

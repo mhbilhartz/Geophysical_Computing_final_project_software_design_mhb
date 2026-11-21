@@ -1,0 +1,75 @@
+name: Test and deploy browser simulator
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MPLBACKEND: Agg
+      MPLCONFIGDIR: /tmp/gpgn-matplotlib
+      XDG_CACHE_HOME: /tmp/gpgn-cache
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-web-test.txt
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-web-test.txt
+      - name: Run original and browser-adapter tests
+        run: python -m unittest discover -s tests -v
+      - name: Check browser JavaScript
+        run: |
+          node --check web/app.js
+          node --check web/worker.js
+      - name: Cache pinned scientific browser runtime
+        uses: actions/cache@v4
+        with:
+          path: outputs/pyodide-cache
+          key: pyodide-0.27.7-${{ hashFiles('scripts/build_pages.py') }}
+      - name: Build static site with vendored Pyodide
+        run: python scripts/build_pages.py --output-dir outputs/site --vendor-runtime
+      - name: Install Chromium for the WebAssembly test
+        run: python -m playwright install --with-deps chromium
+      - name: Test actual Python-in-worker calculations and phone layout
+        run: python scripts/test_browser.py --site-dir outputs/site --output-dir outputs/browser-tests
+      - name: Save test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-evidence
+          path: outputs/browser-tests
+          if-no-files-found: ignore
+      - name: Upload static Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: outputs/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy static simulator
+        id: deployment
+        uses: actions/deploy-pages@v4

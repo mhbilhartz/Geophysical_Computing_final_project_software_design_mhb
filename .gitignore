@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 .mplconfig/
 outputs/
+site/
 .ipynb_checkpoints/
 .pytest_cache/
 .env
