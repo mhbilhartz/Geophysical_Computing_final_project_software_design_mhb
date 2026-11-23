@@ -52,8 +52,12 @@ class SurveySimulationResult:
     data: SurveyResult
 
 
-def plan_simulation(parameters):
-    """Fast validation/counts for the UI; no model arrays or PDE solve."""
+def plan_simulation(parameters,*,max_measurements=MAX_MEASUREMENTS):
+    """Fast validation/counts; no model arrays or PDE solve.
+
+    Browser callers can supply a larger measurement budget. The default keeps
+    the existing desktop limit unchanged.
+    """
     if not isinstance(parameters,SurveyParameters):raise ValueError('Expected SurveyParameters')
     p=parameters
     for name in ('host_resistivity','tunnel_resistivity'):
@@ -64,8 +68,9 @@ def plan_simulation(parameters):
     survey=generate_survey(p.array_type,electrode_count=p.electrode_count,electrode_spacing_m=p.electrode_spacing_m,
                            line_start_x_m=p.line_start_x_m,levels=range(1,level+1),current_a=p.current_a,
                            receiver_spacing_steps=p.receiver_spacing_steps,dipole_spacing_steps=p.dipole_spacing_steps)
-    if len(survey.measurements)>MAX_MEASUREMENTS:
-        raise ValueError(f'The live app supports at most {MAX_MEASUREMENTS} measurements; reduce electrodes or levels')
+    measurement_budget=_integer(max_measurements,'max_measurements')
+    if len(survey.measurements)>measurement_budget:
+        raise ValueError(f'The live app supports at most {measurement_budget} measurements; reduce electrodes or levels')
     tunnel=TunnelGeometry(p.center_x_m,p.depth_m,p.radius_m)
     if p.grid_mode=='Automatic':
         grid=suggest_grid(survey,tunnel,max_cell_size_m=p.max_cell_size_m,padding_factor=p.padding_factor,max_cells=MAX_CELLS)

@@ -101,6 +101,15 @@ json.dumps({'run':_wasm_result.testsRun,'passed':_wasm_result.wasSuccessful(),'l
             with page.expect_download(timeout=30000) as d:page.locator('#png').click()
             image=out/d.value.suggested_filename;d.value.save_as(str(image));assert image.read_bytes().startswith(b'\x89PNG\r\n\x1a\n')
             passed('Four field maps and downloadable PNG are real Matplotlib output')
+            page.locator('#profile').scroll_into_view_if_needed()
+            page.wait_for_function("document.querySelector('#profile').complete && document.querySelector('#profile').naturalWidth>0")
+            profile_width=page.locator('#profile').bounding_box()['width']
+            field_width=page.locator('#field_plots img').first.bounding_box()['width']
+            assert abs(profile_width-field_width)<4,(profile_width,field_width)
+            page.screenshot(path=str(out/'compact_profile.png'))
+            page.locator('#profile_link').click();assert page.locator('#figure_dialog').is_visible()
+            page.locator('#figure_close').click()
+            passed('Apparent-resistivity profile matches a field-map width and still enlarges on tap')
             page.locator('#field_plots a').first.click()
             assert page.locator('#figure_dialog').is_visible()
             page.locator('#figure_zoom').click()
@@ -163,6 +172,30 @@ json.dumps({'run':_wasm_result.testsRun,'passed':_wasm_result.wasSuccessful(),'l
             page.locator('#material').select_option('Custom');number('tunnel_resistivity',100);ready()
             assert all(abs(float(r['apparent_resistivity_ohm_m'])-100)<1e-9 for r in rows())
             passed('Reported 15-source survey runs without changing requested geometry and remains editable')
+            # Exercise the actual slider maximum and all 64 electrodes. A coarse
+            # explicit manual grid keeps this scale/interaction test fast; it is
+            # not an accuracy benchmark for that grid. Existing tests cover the PDE.
+            page.locator('#automatic').uncheck()
+            page.locator('#array_type').select_option('wenner')
+            page.locator('#electrode_count').focus();page.locator('#electrode_count').press('End')
+            assert page.locator('#electrode_count').input_value()=='64'
+            range_value('electrode_spacing_m',5);range_value('max_level',1)
+            page.locator('#grid_mode').select_option('Manual')
+            number('x_min_m',-30);number('x_max_m',405);number('height_m',80);number('nx',64);number('nz',24)
+            page.locator('#material').select_option('Water-filled')
+            page.locator('#automatic').check();ready()
+            sixty_four=rows()
+            assert len(sixty_four)==61
+            assert all(int(r['physical_electrode_count'])==64 for r in sixty_four)
+            assert max(int(r[key]) for r in sixty_four for key in ('a_index','b_index','m_index','n_index'))==63
+            assert any(abs(float(r['apparent_resistivity_ohm_m'])-100)>1e-6 for r in sixty_four)
+            page.screenshot(path=str(out/'sixty_four_electrodes.png'))
+            page.locator('#material').select_option('Custom');number('tunnel_resistivity',100)
+            page.locator('#array_type').select_option('dipole-dipole');range_value('max_level',2);ready()
+            full=rows()
+            assert len(full)==121
+            assert all(abs(float(r['apparent_resistivity_ohm_m'])-100)<1e-9 for r in full)
+            passed('64-electrode slider runs a nonzero survey and preserves all 121 two-level dipole data')
             # A real stop terminates the worker; no SharedArrayBuffer/COOP headers are required.
             range_value('depth_m',20);page.wait_for_function("document.body.dataset.busy==='true'",timeout=30000)
             page.locator('#stop').click()
@@ -179,6 +212,9 @@ json.dumps({'run':_wasm_result.testsRun,'passed':_wasm_result.wasSuccessful(),'l
             ready()
             assert page.evaluate('document.documentElement.scrollWidth<=window.innerWidth+1')
             assert page.locator('#field_plots img').count()==4
+            page.locator('#profile').scroll_into_view_if_needed()
+            page.wait_for_function("document.querySelector('#profile').complete && document.querySelector('#profile').naturalWidth>0")
+            assert abs(page.locator('#profile').bounding_box()['width']-page.locator('#field_plots img').first.bounding_box()['width'])<4
             page.locator('#field_plots').scroll_into_view_if_needed();page.screenshot(path=str(out/'phone.png'))
             passed('Fresh 390px phone context computes in a worker with no page overflow')
             mobile.close();browser.close()

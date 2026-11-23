@@ -39,7 +39,8 @@ local reproduction. The updated submission asks for this runnable website URL;
 the repository URL supplies code and verification evidence.
 
 First use downloads about 45 MB of Python/scientific packages. Controls update
-automatically, and the four maps stack on a phone. The browser has smaller
+automatically, the electrode count reaches 64, and the four maps stack on a phone.
+The apparent-resistivity profile matches a field-map width and enlarges on tap. The browser has smaller
 workload limits than the desktop app. The Pyodide build uses compatible
 WebAssembly library versions; it does not install the desktop wheels below.
 
@@ -374,7 +375,7 @@ Windows PowerShell:
 .\.venv\Scripts\python.exe -m tunnel_resistivity.visualization_demo
 ```
 
-There are **176 tests**, covering analytical/physical solver checks, harmonic
+There are **179 tests**, covering analytical/physical solver checks, harmonic
 interfaces, geometry, current conservation, UI callbacks, plot data/axes,
 analysis measures, electrode geometry, the 2.5D solver, receiver measurements,
 signed apparent resistivity, survey geometry/forward calls/source reuse,
@@ -388,7 +389,7 @@ see [the Step 2 numerical notes](docs/SOURCE_PAIR_2P5D.md) and
 checks are recorded in [TESTING_REPORT.md](TESTING_REPORT.md); the final clean
 review is in [FINAL_REVIEW.md](FINAL_REVIEW.md). Historical milestone test counts
 in the numerical guides describe their respective stages; the current suite has
-176 tests including the browser adapter.
+179 tests including the browser adapter.
 
 Static examples write regenerable files under ignored `outputs/`. The homogeneous
 example should have linear V, Jx=1e-4 A/m², Jz≈0 and total current 0.005 A/m.
@@ -571,7 +572,7 @@ tunnel_resistivity/
   browser.py                   Worker adapter calling the existing solver
   plotting.py, diagnostics.py  Shared plots and face-current diagnostics
   demo.py, tunnel_demo.py      Static working examples
-tests/                         176 automated tests
+tests/                         179 automated tests
 verification.ipynb             Executed analytical verification (saved outputs)
 verification_2p5d.ipynb        Executed 2.5D backend verification (survey Step 4)
 analysis/run_experiments.py     Reproducible controlled experiments

@@ -17,14 +17,16 @@ import numpy as np
 import scipy
 
 from .fields import FieldRequest, SourceFieldCache, default_measurement_index, solve_field_request
+from .survey import _integer
 from .survey_plotting import build_field_figure, build_surface_figure, build_survey_figure, build_survey_map
 from .survey_simulation import PRESETS, SurveyParameters, plan_simulation, run_survey_plan
 
 MAX_BROWSER_CELLS = 32768
-# Cover every source/spacing combination offered by the 4–13 electrode UI
-# (the largest is 28 Schlumberger source pairs). Retain the cell-memory guard.
-MAX_BROWSER_SOURCES = 32
-MAX_BROWSER_MEASUREMENTS = 48
+MAX_BROWSER_ELECTRODES = 64
+# Four levels on 64 electrodes need at most 232 source pairs / 238 data.
+# These are work limits; the separate cell-memory guard is unchanged.
+MAX_BROWSER_SOURCES = 256
+MAX_BROWSER_MEASUREMENTS = 256
 DEFAULT_PARAMETERS = replace(SurveyParameters(), electrode_count=7)
 
 
@@ -33,9 +35,11 @@ def browser_plan(parameters, material):
     if material not in (*PRESETS, 'Custom'):
         raise ValueError('Choose Air-filled, Water-filled or Custom')
     p = SurveyParameters(**parameters)
+    if _integer(p.electrode_count,'electrode_count',4) > MAX_BROWSER_ELECTRODES:
+        raise ValueError(f'The browser supports at most {MAX_BROWSER_ELECTRODES} physical electrodes')
     if material in PRESETS:
         p = replace(p, tunnel_resistivity=PRESETS[material])
-    plan = plan_simulation(p)
+    plan = plan_simulation(p,max_measurements=MAX_BROWSER_MEASUREMENTS)
     if plan.grid.cell_count > MAX_BROWSER_CELLS:
         raise ValueError(f'This grid has {plan.grid.cell_count:,} cells; browser limit is '
                          f'{MAX_BROWSER_CELLS:,}. Reduce the domain, spacing or resolution. '

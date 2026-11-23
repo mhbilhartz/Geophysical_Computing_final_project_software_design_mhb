@@ -11,9 +11,10 @@ import tempfile
 import unittest
 import zipfile
 
-from tunnel_resistivity.browser import BrowserEngine, DEFAULT_PARAMETERS, MAX_BROWSER_SOURCES, browser_plan
+from tunnel_resistivity.browser import (BrowserEngine, DEFAULT_PARAMETERS, MAX_BROWSER_ELECTRODES,
+                                      MAX_BROWSER_SOURCES, MAX_BROWSER_MEASUREMENTS, browser_plan)
 from tunnel_resistivity.survey import generate_survey
-from tunnel_resistivity.survey_simulation import run_survey_plan
+from tunnel_resistivity.survey_simulation import SurveyParameters, plan_simulation, run_survey_plan
 
 
 class BrowserPlanTests(unittest.TestCase):
@@ -32,9 +33,35 @@ class BrowserPlanTests(unittest.TestCase):
         p.update(grid_mode='Manual',nx=257,nz=128)
         with self.assertRaisesRegex(ValueError,'32,768'):browser_plan(p,'Air-filled')
 
-    def test_browser_source_budget_rejects_broad_survey(self):
-        p=asdict(DEFAULT_PARAMETERS);p.update(electrode_count=21,max_level=3)
-        with self.assertRaisesRegex(ValueError,'source solves'):browser_plan(p,'Air-filled')
+    def test_browser_rejects_more_than_64_physical_electrodes(self):
+        p=asdict(DEFAULT_PARAMETERS);p.update(electrode_count=65)
+        with self.assertRaisesRegex(ValueError,'64 physical electrodes'):browser_plan(p,'Air-filled')
+
+    def test_sixty_four_electrodes_plan_for_all_arrays_without_truncation(self):
+        expected={'wenner':119,'schlumberger':120,'dipole-dipole':121}
+        for kind,count in expected.items():
+            p=asdict(DEFAULT_PARAMETERS);p.update(electrode_count=64,array_type=kind)
+            with self.subTest(array=kind):
+                plan=browser_plan(p,'Water-filled')
+                self.assertEqual(len(plan.survey.electrode_positions_x_m),64)
+                self.assertEqual(plan.survey.electrode_positions_x_m[-1],345)
+                self.assertEqual(len(plan.survey.measurements),count)
+                self.assertLessEqual(plan.grid.cell_count,32768)
+                self.assertGreater(plan.grid.x_max_m,345)
+
+    def test_browser_measurement_budget_does_not_change_desktop_default(self):
+        p=asdict(DEFAULT_PARAMETERS);p.update(electrode_count=64,array_type='dipole-dipole')
+        with self.assertRaisesRegex(ValueError,'120 measurements'):plan_simulation(SurveyParameters(**p))
+        self.assertEqual(len(browser_plan(p,'Custom').survey.measurements),121)
+        with self.assertRaises(ValueError):plan_simulation(SurveyParameters(),max_measurements=0)
+
+    def test_four_level_64_electrode_survey_preserves_all_measurements(self):
+        p=asdict(DEFAULT_PARAMETERS)
+        p.update(electrode_count=64,array_type='schlumberger',max_level=4,
+                 grid_mode='Manual',x_min_m=-30,x_max_m=400,nx=128,nz=64)
+        plan=browser_plan(p,'Water-filled')
+        self.assertEqual(len(plan.survey.measurements),232)
+        self.assertEqual(plan.survey.unique_source_pair_count,232)
 
     def test_reported_twelve_electrode_survey_keeps_requested_geometry(self):
         p=asdict(DEFAULT_PARAMETERS);p.update(electrode_count=12,electrode_spacing_m=6,max_level=2)
@@ -48,7 +75,7 @@ class BrowserPlanTests(unittest.TestCase):
 
     def test_source_budget_covers_every_offered_array_spacing_combination(self):
         largest=0
-        for count in range(4,14):
+        for count in range(4,MAX_BROWSER_ELECTRODES+1):
             for kind in ('wenner','schlumberger','dipole-dipole'):
                 for receiver in (range(1,min(4,count-3)+1) if kind=='schlumberger' else (1,)):
                     for dipole in (range(1,min(3,(count-1)//3)+1) if kind=='dipole-dipole' else (1,)):
@@ -59,7 +86,8 @@ class BrowserPlanTests(unittest.TestCase):
                             except ValueError:continue  # Geometrically impossible combinations are hidden by the UI.
                             largest=max(largest,survey.unique_source_pair_count)
                             self.assertLessEqual(survey.unique_source_pair_count,MAX_BROWSER_SOURCES)
-        self.assertEqual(largest,28)
+                            self.assertLessEqual(len(survey.measurements),MAX_BROWSER_MEASUREMENTS)
+        self.assertEqual(largest,232)
 
 
 class BrowserEngineTests(unittest.TestCase):

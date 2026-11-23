@@ -36,7 +36,8 @@ The desktop Panel app retains its nine-electrode default.
 - Wenner, Schlumberger and dipole–dipole arrays use the existing physical
   electrode-line definitions and independent applicable spacing controls.
 - Automatic and manual grids call the existing production planning/validation.
-  Browser budgets are 32,768 cells, 32 unique source solves and 48 measurements.
+  The electrode slider supports **4–64 electrodes**. Browser budgets are
+  32,768 cells, 256 unique source solves and 256 measurements.
   The source budget covers every electrode/level combination offered by the UI.
   An oversized grid is rejected; the grid is never silently coarsened.
 - Uncheck automatic updates to make several edits, then use **Update simulation**.
@@ -188,9 +189,9 @@ must be checked separately; they are not inferred from a passing local suite.
 
 The initial browser source limit of 12 rejected a valid offered configuration:
 12 Wenner electrodes at 6 m pitch and levels 1–2 need 15 source solves. This
-prevented changed material settings from producing a new result. The source
-budget is now 32, covering the largest offered configuration (28 Schlumberger
-source pairs), while the 32,768-cell memory limit remains unchanged. The selected
+prevented changed material settings from producing a new result. That correction raised the source budget to 32 for the then-current
+4–13-electrode interface. The subsequent 64-electrode extension below sets the
+current limits; the 32,768-cell memory limit remains unchanged. The selected
 electrodes, spacing and levels are preserved; no measurements are silently dropped.
 
 Queued edits now show the currently finishing survey's progress. Site builds
@@ -199,3 +200,31 @@ to avoid reusing an old browser limit after an update; the large fixed Pyodide
 runtime stays cacheable. After a deployment, reload an already-open page to
 load its updated worker. The regression suite exercises the reported 15-source
 water-filled case and verifies that a subsequent material edit still works.
+
+## 64-electrode control and compact profile
+
+The browser electrode slider now reaches 64. Source and measurement budgets
+were increased together to 256; four offered levels need at most 232 source
+pairs or 238 measurements. The browser explicitly supplies its measurement
+budget to the existing planning helper, whose desktop default remains 120.
+No numerical operator or solver was replaced.
+
+At the default 5 m pitch and two levels, 64 electrodes produce 119 Wenner,
+120 Schlumberger or 121 dipole–dipole measurements. All positions and data are
+retained, including the last physical electrode. The automatic grids for these
+default cases fit the existing browser memory budget. Wider, finer or higher-level
+models can still exceed 32,768 cells and are rejected without silent coarsening.
+Large surveys may take many minutes on slower devices; use the progress counter
+and Stop control when needed.
+
+The apparent-resistivity profile uses one field-map column on desktop and the
+full available width on a phone. It keeps its natural aspect ratio, physical
+labels and full-resolution figure dialog. The browser regression checks compare
+its displayed width with a field map at both viewport sizes.
+
+The 64-electrode browser regression uses an explicitly coarse manual grid to
+check a complete nonzero 61-measurement Wenner survey and a 121-measurement
+homogeneous dipole–dipole survey. This is a scale/interaction check, not an
+accuracy claim for that coarse grid. Separate planning tests cover the default
+automatic grids for all three arrays, and the original numerical verification
+notebooks and solver tests continue to establish the method's scientific limits.

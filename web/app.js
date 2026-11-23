@@ -174,6 +174,7 @@ function startWorker() {
       }
       if (d.phase==='plan') {
         $('plan').textContent=`Validated plan: ${d.measurements} measurements, ${d.sources} source solves × 64 Fourier modes; grid ${d.grid.nx}×${d.grid.nz} (${(d.grid.nx*d.grid.nz).toLocaleString()} cells), x=${format(d.grid.x_min_m)}…${format(d.grid.x_max_m)} m, bottom=${format(d.grid.height_m)} m.`;
+        if(d.sources>32)$('plan').textContent+=' Large survey: computation may take several minutes; the controls and Stop calculation remain available.';
       } else if (d.phase==='survey') status(`Survey source solves: ${d.done}/${d.total}. Calculating in your browser; controls remain available.`);
       else if (d.phase==='field') status(`Rendering fields for measurement ${d.measurement}…`);
       return;
