@@ -15,6 +15,7 @@ from pathlib import Path
 import shutil
 import threading
 import time
+from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright
 import numpy as np
@@ -70,7 +71,8 @@ def main():
         try:
             response=page.goto(url,wait_until='domcontentloaded');assert response.status==200
             ready();timings['cold_initial_survey_seconds']=time.perf_counter()-started
-            assert len(page.workers)==1 and page.workers[0].url.endswith('/worker.js')
+            assert len(page.workers)==1 and urlparse(page.workers[0].url).path.endswith('/worker.js')
+            assert urlparse(page.workers[0].url).query.startswith('v=')
             assert page.locator('#field_plots img').count()==4
             for actual,wanted in zip(rows(),expected):
                 for key in ('voltage_v','apparent_resistivity_ohm_m'):
@@ -147,6 +149,20 @@ json.dumps({'run':_wasm_result.testsRun,'passed':_wasm_result.wasSuccessful(),'l
             page.locator('#measurement').select_option(index=0);ready()
             assert 'Measurement 1:' in page.locator('#field_info').inner_text()
             passed('Reset and measurement selection update the fields correctly')
+            # Reproduce the reported live-site failure: 12 electrodes, 6 m pitch,
+            # two Wenner levels, then edit the material again after completion.
+            page.locator('#automatic').uncheck()
+            range_value('electrode_count',12);range_value('electrode_spacing_m',6);range_value('max_level',2)
+            page.locator('#material').select_option('Water-filled')
+            page.locator('#automatic').check();ready()
+            large=rows()
+            assert len(large)==15 and len({r['source_pair_id'] for r in large})==15
+            assert all(float(r['tunnel_resistivity_ohm_m'])==5 for r in large)
+            assert '12 electrodes, 6 m pitch, levels 1–2' in page.locator('#scenario_info').inner_text()
+            page.screenshot(path=str(out/'twelve_electrode_water.png'))
+            page.locator('#material').select_option('Custom');number('tunnel_resistivity',100);ready()
+            assert all(abs(float(r['apparent_resistivity_ohm_m'])-100)<1e-9 for r in rows())
+            passed('Reported 15-source survey runs without changing requested geometry and remains editable')
             # A real stop terminates the worker; no SharedArrayBuffer/COOP headers are required.
             range_value('depth_m',20);page.wait_for_function("document.body.dataset.busy==='true'",timeout=30000)
             page.locator('#stop').click()

@@ -76,7 +76,7 @@
             <label for="nx">Horizontal cells nx</label><input id="nx" type="number" min="2" max="1000" step="1" value="128">
             <label for="nz">Depth cells nz</label><input id="nz" type="number" min="2" max="1000" step="1" value="64">
           </div>
-          <p class="hint">The same production grid rules apply. Browser limits: 32,768 cells, 12 source solves and 48 measurements. Oversized models are rejected, never silently coarsened.</p>
+          <p class="hint">The same production grid rules apply. Browser limits: 32,768 cells, 32 source solves and 48 measurements. Larger surveys take longer. Oversized grids are rejected, never silently coarsened.</p>
         </details>
         <div class="actions">
           <label class="toggle"><input id="automatic" type="checkbox" checked> Update automatically</label>

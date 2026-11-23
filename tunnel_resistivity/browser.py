@@ -21,7 +21,9 @@ from .survey_plotting import build_field_figure, build_surface_figure, build_sur
 from .survey_simulation import PRESETS, SurveyParameters, plan_simulation, run_survey_plan
 
 MAX_BROWSER_CELLS = 32768
-MAX_BROWSER_SOURCES = 12
+# Cover every source/spacing combination offered by the 4–13 electrode UI
+# (the largest is 28 Schlumberger source pairs). Retain the cell-memory guard.
+MAX_BROWSER_SOURCES = 32
 MAX_BROWSER_MEASUREMENTS = 48
 DEFAULT_PARAMETERS = replace(SurveyParameters(), electrode_count=7)
 

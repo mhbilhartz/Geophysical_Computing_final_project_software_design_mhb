@@ -73,6 +73,13 @@ def build(output, vendor_runtime=False, cache=None):
     config={'pyodideVersion':PYODIDE_VERSION,'runtimeBase':'./pyodide/' if vendor_runtime else CDN,
             'pythonZipSha256':hashlib.sha256((output/'python.zip').read_bytes()).hexdigest(),
             'sourceHashes':hashes,'runtime':runtime}
+    version_inputs=''.join((ROOT/'web'/name).read_text() for name in ('app.js','worker.js','styles.css'))+json.dumps(hashes,sort_keys=True)
+    asset_version=hashlib.sha256(version_inputs.encode()).hexdigest()[:16]
+    index=(output/'index.html').read_text()
+    index=index.replace('src="app.js"',f'src="app.js?v={asset_version}"')
+    index=index.replace('href="styles.css"',f'href="styles.css?v={asset_version}"')
+    (output/'index.html').write_text(index)
+    config['assetVersion']=asset_version
     (output/'runtime-config.json').write_text(json.dumps(config,indent=2)+'\n')
     print(f'Built static browser site in {output}; vendored runtime={vendor_runtime}',flush=True)
     if vendor_runtime:print(f'Runtime download: {runtime["bytes"]/1024**2:.1f} MiB; packages: '+', '.join(runtime['packages']),flush=True)

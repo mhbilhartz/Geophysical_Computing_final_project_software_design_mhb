@@ -36,8 +36,9 @@ The desktop Panel app retains its nine-electrode default.
 - Wenner, Schlumberger and dipole–dipole arrays use the existing physical
   electrode-line definitions and independent applicable spacing controls.
 - Automatic and manual grids call the existing production planning/validation.
-  Browser budgets are 32,768 cells, 12 unique source solves and 48 measurements.
-  An oversized plan is rejected; the grid is never silently coarsened.
+  Browser budgets are 32,768 cells, 32 unique source solves and 48 measurements.
+  The source budget covers every electrode/level combination offered by the UI.
+  An oversized grid is rejected; the grid is never silently coarsened.
 - Uncheck automatic updates to make several edits, then use **Update simulation**.
   This is optional; the sliders do not require a Run-button click.
 - A calculation already running in the worker finishes before the latest queued
@@ -182,3 +183,19 @@ survey map's spacing-level axis is not depth.
 
 These are executed local checks. GitHub Actions and the live Pages deployment
 must be checked separately; they are not inferred from a passing local suite.
+
+## November 23 control-limit correction
+
+The initial browser source limit of 12 rejected a valid offered configuration:
+12 Wenner electrodes at 6 m pitch and levels 1–2 need 15 source solves. This
+prevented changed material settings from producing a new result. The source
+budget is now 32, covering the largest offered configuration (28 Schlumberger
+source pairs), while the 32,768-cell memory limit remains unchanged. The selected
+electrodes, spacing and levels are preserved; no measurements are silently dropped.
+
+Queued edits now show the currently finishing survey's progress. Site builds
+version JavaScript/CSS/worker URLs and refresh the Python source/configuration
+to avoid reusing an old browser limit after an update; the large fixed Pyodide
+runtime stays cacheable. After a deployment, reload an already-open page to
+load its updated worker. The regression suite exercises the reported 15-source
+water-filled case and verifies that a subsequent material edit still works.

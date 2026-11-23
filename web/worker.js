@@ -4,7 +4,7 @@ let config;
 const send = (type, payload = {}) => self.postMessage({type, ...payload});
 
 async function initialize() {
-  config = await (await fetch(new URL('runtime-config.json', self.location.href))).json();
+  config = await (await fetch(new URL('runtime-config.json', self.location.href), {cache: 'no-store'})).json();
   const base = new URL(config.runtimeBase, self.location.href).href;
   send('loading', {text: 'Loading Python. The first visit downloads the scientific runtime; later visits use your browser cache.'});
   importScripts(`${base}pyodide.js`);
@@ -14,7 +14,7 @@ async function initialize() {
     messageCallback: text => send('loading', {text}),
     errorCallback: text => send('loading', {text})
   });
-  const response = await fetch(new URL('python.zip', self.location.href));
+  const response = await fetch(new URL('python.zip', self.location.href), {cache: 'no-store'});
   if (!response.ok) throw new Error(`Python source download failed: ${response.status}`);
   const source = await response.arrayBuffer();
   const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', source)), x => x.toString(16).padStart(2, '0')).join('');

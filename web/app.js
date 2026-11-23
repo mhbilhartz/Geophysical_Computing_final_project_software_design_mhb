@@ -150,7 +150,9 @@ function publishSurvey(result) {
 function startWorker() {
   const generation=++epoch;
   ready=false;active=null;
-  worker=new Worker(new URL('worker.js',import.meta.url));
+  const workerUrl=new URL('worker.js',import.meta.url);
+  workerUrl.search=new URL(import.meta.url).search;
+  worker=new Worker(workerUrl);
   $('reload').hidden=true;
   worker.onmessage=({data})=>{
     if (generation!==epoch) return;
@@ -163,8 +165,13 @@ function startWorker() {
     }
     if (data.type==='fatal') {fatal(data.error);return;}
     if (data.type==='progress') {
-      if (data.id!==desired?.id) return;
       const d=data.detail;
+      if (data.id!==desired?.id) {
+        if (desired && active?.id===data.id && d.phase==='survey') {
+          status(`New settings queued. Finishing the current survey: ${d.done}/${d.total} source solves. Stop calculation cancels immediately.`);
+        }
+        return;
+      }
       if (d.phase==='plan') {
         $('plan').textContent=`Validated plan: ${d.measurements} measurements, ${d.sources} source solves × 64 Fourier modes; grid ${d.grid.nx}×${d.grid.nz} (${(d.grid.nx*d.grid.nz).toLocaleString()} cells), x=${format(d.grid.x_min_m)}…${format(d.grid.x_max_m)} m, bottom=${format(d.grid.height_m)} m.`;
       } else if (d.phase==='survey') status(`Survey source solves: ${d.done}/${d.total}. Calculating in your browser; controls remain available.`);

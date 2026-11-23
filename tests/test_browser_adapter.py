@@ -11,7 +11,8 @@ import tempfile
 import unittest
 import zipfile
 
-from tunnel_resistivity.browser import BrowserEngine, DEFAULT_PARAMETERS, browser_plan
+from tunnel_resistivity.browser import BrowserEngine, DEFAULT_PARAMETERS, MAX_BROWSER_SOURCES, browser_plan
+from tunnel_resistivity.survey import generate_survey
 from tunnel_resistivity.survey_simulation import run_survey_plan
 
 
@@ -32,8 +33,33 @@ class BrowserPlanTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'32,768'):browser_plan(p,'Air-filled')
 
     def test_browser_source_budget_rejects_broad_survey(self):
-        p=asdict(DEFAULT_PARAMETERS);p.update(electrode_count=13,max_level=3)
+        p=asdict(DEFAULT_PARAMETERS);p.update(electrode_count=21,max_level=3)
         with self.assertRaisesRegex(ValueError,'source solves'):browser_plan(p,'Air-filled')
+
+    def test_reported_twelve_electrode_survey_keeps_requested_geometry(self):
+        p=asdict(DEFAULT_PARAMETERS);p.update(electrode_count=12,electrode_spacing_m=6,max_level=2)
+        plan=browser_plan(p,'Water-filled')
+        self.assertEqual(plan.survey.unique_source_pair_count,15)
+        self.assertEqual(len(plan.survey.measurements),15)
+        self.assertEqual(plan.parameters.electrode_count,12)
+        self.assertEqual(plan.parameters.electrode_spacing_m,6)
+        self.assertEqual(plan.parameters.max_level,2)
+        self.assertEqual(plan.parameters.tunnel_resistivity,5)
+
+    def test_source_budget_covers_every_offered_array_spacing_combination(self):
+        largest=0
+        for count in range(4,14):
+            for kind in ('wenner','schlumberger','dipole-dipole'):
+                for receiver in (range(1,min(4,count-3)+1) if kind=='schlumberger' else (1,)):
+                    for dipole in (range(1,min(3,(count-1)//3)+1) if kind=='dipole-dipole' else (1,)):
+                        for level in range(1,5):
+                            try:
+                                survey=generate_survey(kind,electrode_count=count,levels=range(1,level+1),
+                                    receiver_spacing_steps=receiver,dipole_spacing_steps=dipole)
+                            except ValueError:continue  # Geometrically impossible combinations are hidden by the UI.
+                            largest=max(largest,survey.unique_source_pair_count)
+                            self.assertLessEqual(survey.unique_source_pair_count,MAX_BROWSER_SOURCES)
+        self.assertEqual(largest,28)
 
 
 class BrowserEngineTests(unittest.TestCase):
@@ -86,6 +112,7 @@ class StaticBuildTests(unittest.TestCase):
             self.assertTrue((output/'.nojekyll').exists())
             self.assertIn('worker.js',(output/'app.js').read_text())
             self.assertEqual(json.loads((output/'runtime-config.json').read_text())['pyodideVersion'],'0.27.7')
+            self.assertIn('app.js?v='+config['assetVersion'],(output/'index.html').read_text())
 
     def test_build_refuses_checkout_root(self):
         root=Path(__file__).resolve().parents[1]
